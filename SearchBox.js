@@ -11,128 +11,23 @@ Dev version:
 http://pl.wikipedia.org/w/index.php?title=Wikipedysta:Nux/SearchBox.dev.js&action=edit
 User version:
 http://pl.wikipedia.org/w/index.php?title=MediaWiki:Gadget-searchbox.js&action=edit
+*/
 
-<pre>
-/* ======================================================================== *\
-    Search box for Mediawiki
-	
-	+ search in edit area
-	+ replace found text
-	+ search and replace with regular expressions
-	+ memory (basic functionality)
-	
-	+ Now supports IE!
-	
-	copyright:  (C) 2006 Zocky (en:User:Zocky), (C) 2006-2011 Maciej Jaros (pl:User:Nux, en:User:EcceNux)
-	licence:    GNU General Public License v2,
-                http://opensource.org/licenses/gpl-license.php
-\* ======================================================================== */
-	// version
-	var tmp_VERSION = '2.3.7mw';  // = nuxsr.version = nuxsr.ver
-// ----------
+/* Translatable strings */
+mw.messages.set( {
+	'sbg-occurences-replaced': 'Zmieniono $1 wystąpień [$2] na [$3].',
+	'sbg-search-from-the-beginning': 'Wyszukiwanie od początku'
+} );
 
-/* =====================================================
-	I10n
-   ===================================================== */
-var tmp_nuxsr_lang = {'_' : ''
-	,'_num_ ocurrences of _str_ replaced with _str_' : 'Zmieniono $1 wystąpień [$2] na [$3].'
-	,'searching from the beginning' : 'wyszukiwanie od początku'
-	,'error - jsAlert is undefined' :
-		'<p>Błąd krytyczny - brak wymaganych bibliotek!</p>'
-		+'<p>Do prawidłowego działania skrypt wymaga użycia biblioteki „<a href="//pl.wikipedia.org/wiki/MediaWiki:sftJSmsg.js">sftJSmsg</a>”.'
-	,'error - name conflict' :
-		'<p>Błąd krytyczny - konflikt nazw!</p>'
-		+'<p>Jeden ze skryptów używa już nazwy <tt>nuxsr</tt> jako zmienną globalną.</p>'
-	,'error - import nuxedtoolkit' :
-		'<p>Błąd krytyczny - brak wymaganych bibliotek!</p>'
-		+'<p>Do prawidłowego działania skrypt wymaga użycia biblioteki „<a href="//pl.wikipedia.org/wiki/MediaWiki:Nuxedtoolkit.js">nuxedtoolkit</a>”.'
-	,'error - import sel_t' :
-		'<p>Błąd krytyczny - brak wymaganych bibliotek!</p>'
-		+'<p>Do prawidłowego działania skrypt wymaga użycia biblioteki „<a href="//pl.wikipedia.org/wiki/MediaWiki:sel_t.js">sel_t</a>”.'
+/**
+ * Search box for Mediawiki code editor.
+ */
+window.nuxsr = {
+	/** Version of the gadget */
+	version: '2.4.1dev'
 };
-// 'Critical error - name conflict!\n\nOne of the scripts uses nuxsr as a global variable.'
 
-/* =====================================================
-	External libraries check
-   ===================================================== */
-if (mw.config.get('wgAction') == 'edit' || mw.config.get('wgAction') == 'submit')
-{
-	$(function()
-	{
-		/*if (typeof(jsAlert)!='function')
-		{
-			// soft alert
-			var nel = document.createElement("div");
-			nel.style.cssText="position:absolute; width:50%; max-width:500px; background-color:white; border:1px solid black; padding:1em; z-index:10000";
-			nel.innerHTML = tmp_nuxsr_lang['error - jsAlert is undefined'];
-			document.body.insertBefore(nel, document.body.firstChild);
-		}*/
-		if (typeof(sel_t)!='object')
-		{
-			alert(tmp_nuxsr_lang['error - import sel_t']);
-			//importScript('User:Nux/sel_t.js')
-		}
-		if (typeof (nuxedtoolkit)!='object')
-		{
-			alert(tmp_nuxsr_lang['error - import nuxedtoolkit']);
-			//importScript('User:Nux/nuxedtoolkit.js')
-		}
-	});
-}
 
-/* =====================================================
-	CSS
-   ===================================================== */
-if (mw.config.get('wgAction') == 'edit' || mw.config.get('wgAction') == 'submit')
-{
-	importStylesheet('User:Nux/SearchBox.css');
-}
-
-/* =====================================================
-	Object Init
-   ===================================================== */
-if (nuxsr!=undefined)
-{
-	alert(tmp_nuxsr_lang['error - name conflict']);
-}
-var nuxsr = new Object();
-nuxsr.ver = nuxsr.version = tmp_VERSION;
-nuxsr.lang = tmp_nuxsr_lang;
-
-//
-// btns definitions
-nuxsr.btns =
-{
-	sr :
-	{
-		attrs :
-		{
-			title : 'Wyszukiwanie i zamiana (wer. '+nuxsr.ver+')',
-			alt : "Szuk.",
-			style : "width:auto;height:auto",
-			id : 'SearchIcon'
-		},
-		icons :
-		{
-			oldbar : '//upload.wikimedia.org/wikipedia/en/1/12/Button_find.png',
-			newbar : '//commons.wikimedia.org/w/thumb.php?f=Crystal_Clear_action_viewmag.png&w=21'
-		}
-	},
-	tc :
-	{
-		attrs :
-		{
-			title : 'Zmiana wielkości liter',
-			alt : "Wlk. lit.",
-			style : "width:auto;height:auto"
-		},
-		icons :
-		{
-			oldbar : '//upload.wikimedia.org/wikipedia/commons/1/12/Button_case.png',
-			newbar : '//commons.wikimedia.org/w/thumb.php?f=Wynn.svg&w=23'
-		}
-	}
-}
 
 //
 // search box code
@@ -162,7 +57,6 @@ nuxsr.boxHTML =
 		+'<div style="clear:both;padding-top:3px;">'
 			+'<span>'
 				+'<a href="javascript:nuxsr.mem.remind()" style="background:inherit">MR</a>'
-		//		+' <a href="javascript:nuxsr.mass_rep(nuxsr.mass_rep_htmlspecialchars)" title="Zamień specjalne znaki HTML na encje HTML">HTMLSpecialChars</a>'
 			+'</span>'
 			+' &nbsp; '
 			+'<span>'
@@ -178,11 +72,10 @@ nuxsr.boxHTML =
 // Variables set on page load
 //
 // nuxsr.t=document.editform.wpTextbox1;
-// nuxsr.f=document.nuxsr_form;
+// nuxsr.form=document.nuxsr_form;
 // nuxsr.s=document.nuxsr_form.nuxsr.search;
 // nuxsr.r=document.nuxsr_form.nuxsr.replace;
-// nuxsr.w=nuxsr.t.style.width;
-// nuxsr.i=document.getElementById('SearchIcon');
+// nuxsr.srbox is a form container;
 
 /* =====================================================
 	Common replace/search functions
@@ -190,16 +83,17 @@ nuxsr.boxHTML =
 nuxsr.getSearchString = function ()
 {
 	var str = nuxsr.s.value;
-	if (!nuxsr.f.nuxsr_regexp.checked)
+	if (!nuxsr.form.nuxsr_regexp.checked)
 	{
-		str = str.replace(/([\[\]\{\}\|\.\*\?\(\)\$\^\\])/g,'\\$1')
+		str = str.replace(/([\[\]\{\}\|\.\*\?\(\)\$\^\\])/g,'\\$1');
 	}
 	return str;
-}
+};
+
 nuxsr.getReplaceString = function ()
 {
 	var str = nuxsr.r.value;
-	if (!nuxsr.f.nuxsr_regexp.checked)
+	if (!nuxsr.form.nuxsr_regexp.checked)
 	{
 		// not needed
 		//str=str.replace(/([\$\\])/g,'\\$1');
@@ -211,14 +105,14 @@ nuxsr.getReplaceString = function ()
 		eval ("str='"+str+"'");
 	}
 	return str;
-}
+};
 
 /* =====================================================
 	Search functions
    ===================================================== */
 nuxsr.back = function ()
 {
-	if (nuxsr.s.value=='')
+	if (nuxsr.s.value==='')
 	{
 		nuxsr.t.focus();
 		return;
@@ -229,17 +123,17 @@ nuxsr.back = function ()
 
 	// set up greedy search to get the last match of the searchString
 	searchString="^([\\s\\S]*)("+searchString+")";
-	var re=new RegExp(searchString, (nuxsr.f.nuxsr_case.checked ? "" : "i"));
+	var re=new RegExp(searchString, (nuxsr.form.nuxsr_case.checked ? "" : "i"));
 	var res = re.exec (nuxsr.t.value.substring(0,selBB.start));
 	if (!res)
 	{
-		var res = re.exec (nuxsr.t.value)
+		res = re.exec (nuxsr.t.value);
 	}
 
 	// set up selection
 	if (res)
 	{
-		sel_t.setSelRange (nuxsr.t, res[1].length, res[1].length+res[2].length)
+		sel_t.setSelRange (nuxsr.t, res[1].length, res[1].length+res[2].length);
 	}
 	else
 	{
@@ -249,45 +143,45 @@ nuxsr.back = function ()
 
 	// move to selection
 	nuxsr.sync();
-}
-	
+};
+
 nuxsr.next = function (norev)
 {
-	if (nuxsr.s.value=='')
+	if (nuxsr.s.value==='')
 	{
 		nuxsr.t.focus();
-		return
+		return;
 	}
-	
+
 	var searchString = nuxsr.getSearchString();
 	var selBB = sel_t.getSelBound(nuxsr.t);
-	
+
 	// set up for search forward and execute
-	var re=new RegExp(searchString, (nuxsr.f.nuxsr_case.checked ? "g" : "gi"));
+	var re=new RegExp(searchString, (nuxsr.form.nuxsr_case.checked ? "g" : "gi"));
 	re.lastIndex=selBB.end;
-	var res = re.exec (nuxsr.t.value)
+	var res = re.exec (nuxsr.t.value);
 	if (!res && !norev)
 	{
-		nuxsr.msg(nuxsr.lang['searching from the beginning'])
+		nuxsr.msg(mw.msg('sbg-search-from-the-beginning'));
 		re.lastIndex=0;
-		var res = re.exec (nuxsr.t.value)
+		res = re.exec (nuxsr.t.value);
 	}
-	
+
 	// set up selection
 	if (res)
 	{
-		sel_t.setSelRange (nuxsr.t, res.index, res.index+res[0].length)
+		sel_t.setSelRange (nuxsr.t, res.index, res.index+res[0].length);
 	}
 	else
 	{
 		selBB.start = selBB.end;
 		sel_t.setSelBound (nuxsr.t, selBB, false);
 	}
-	
+
 	// move to selection
 	nuxsr.sync();
-}
-	
+};
+
 /* =====================================================
 	Replace functions
    ===================================================== */
@@ -296,14 +190,14 @@ nuxsr.replace = function ()
 	//
 	// get string
 	var str = sel_t.getSelStr(nuxsr.t, true);
-	
+
 	//
 	// get attributes
 	var searchString = nuxsr.getSearchString();
 	var replaceString = nuxsr.getReplaceString();
 	var selBB = sel_t.getSelBound(nuxsr.t);
-	
-	var re=new RegExp(searchString, (nuxsr.f.nuxsr_case.checked ? "g" : "gi"));
+
+	var re=new RegExp(searchString, (nuxsr.form.nuxsr_case.checked ? "g" : "gi"));
 
 	//
 	// replace
@@ -313,37 +207,37 @@ nuxsr.replace = function ()
 	{
 		// run
 		str = str.replace(re, replaceString);
-		
+
 		// save selection
 		var sel_tmp = {
 			start : selBB.start,
 			strlen_post : str.length
-		}
-		
+		};
+
 		// replace in selection
 		sel_t.qsetSelStr(nuxsr.t, str, true);
 
 		// set new selection range
 		sel_t.setSelRange (nuxsr.t, sel_tmp.start, sel_tmp.start + sel_tmp.strlen_post);
 	}
-	
+
 	//
 	// focus
 	nuxsr.t.focus();
-}
-	
+};
+
 nuxsr.replaceAll = function ()
 {
 	//
 	// get string
 	var str = sel_t.getSelStr(nuxsr.t, true);
-	
+
 	//
 	// get attributes
 	var searchString = nuxsr.getSearchString();
 	var replaceString = nuxsr.getReplaceString();
-	
-	var re=new RegExp(searchString, (nuxsr.f.nuxsr_case.checked ? "g" : "gi"));
+
+	var re=new RegExp(searchString, (nuxsr.form.nuxsr_case.checked ? "g" : "gi"));
 
 	//
 	// check for ocurrences
@@ -352,7 +246,7 @@ nuxsr.replaceAll = function ()
 	//
 	// run
 	str = str.replace(re, replaceString);
-	
+
 	//
 	// output
 	sel_t.qsetSelStr(nuxsr.t, str, true);
@@ -361,13 +255,13 @@ nuxsr.replaceAll = function ()
 
 	//
 	// show num of ocurrences
-	if (matchesArr.length)
+	if (matchesArr)
 	{
-		nuxsr.msg(nuxsr.lang['_num_ ocurrences of _str_ replaced with _str_'].replace(/\$1/, matchesArr.length).replace(/\$2/, nuxsr.s.value).replace(/\$3/, nuxsr.r.value));
+		nuxsr.msg( mw.msg('sbg-occurences-replaced', matchesArr.length, nuxsr.s.value, nuxsr.r.value));
 	}
 
 	return;
-}
+};
 
 /* =====================================================
 	Toggle case functions
@@ -380,22 +274,22 @@ nuxsr.toggleCase = function ()
 		var str = sel_t.getSelStr(nuxsr.t);
 		if (str==str.toUpperCase())
 		{
-			str = str.toLowerCase()
+			str = str.toLowerCase();
 		}
 		else if (str==str.toLowerCase() && selBB.end-selBB.start>1)
 		{
-			str = str.substring(0,1).toUpperCase()+str.substring(1).toLowerCase()
+			str = str.substring(0,1).toUpperCase()+str.substring(1).toLowerCase();
 		}
 		else
 		{
-			str = str.toUpperCase()
+			str = str.toUpperCase();
 		}
-		
+
 		// set selection with new value
 		sel_t.setSelStr(nuxsr.t, str, false);
 	}
 	nuxsr.sync();
-}
+};
 
 /* =====================================================
 	Move focus back to the textarea
@@ -404,99 +298,58 @@ nuxsr.toggleCase = function ()
 nuxsr.sync = function ()
 {
 	nuxsr.t.focus();
-}
-	
-/* =====================================================
-	Init search and replace
-   ===================================================== */
-nuxsr.init = function ()
-{
-	if(document.getElementById('wpTextbox1'))
-	{
-		//
-		// set some values
-		nuxsr.t=document.editform.wpTextbox1;
-		//nuxsr.w=nuxsr.t.style.width;
-		
-		//
-		// inserting buttons
-		nuxedtoolkit.prepare();
-		var group_el = nuxedtoolkit.addGroup();
-		nuxedtoolkit.addBtn(
-			group_el, 'nuxsr.showHide()',
-			nuxsr.btns.sr.icons, nuxsr.btns.sr.attrs
-		);
-		nuxedtoolkit.addBtn(
-			group_el, 'nuxsr.toggleCase()',
-			nuxsr.btns.tc.icons, nuxsr.btns.tc.attrs
-		);
-		
-		// fix access key
-		nuxsr.i=document.getElementById('SearchIcon');
-		nuxsr.i.accessKey="F";
+};
 
-		//
-		// inserting search box
-		var srbox = document.createElement('div');
-		srbox.innerHTML = nuxsr.boxHTML;
-		srbox.firstChild.style.display = 'none';
-		
-		//el=document.getElementById('editform');
-		el=document.getElementById('wpTextbox1');
-		el.parentNode.insertBefore(srbox,el);
-		nuxsr.srbox = srbox;
-		
-		nuxsr.f=document.nuxsr_form;
-		nuxsr.s=document.nuxsr_form.nuxsr_search;
-		nuxsr.r=document.nuxsr_form.nuxsr_replace;
-
-		//
-		// inserting message box
-		if (document.editform.messages == undefined)
-		{
-			el=document.createElement('textarea');
-			el.cols=nuxsr.t.cols;
-			el.style.cssText=nuxsr.t.style.cssText;
-			el.rows=5;
-			el.id='messages';
-			el.style.display='none';
-			el.style.width='auto';
-			nuxsr.t.parentNode.insertBefore(el,nuxsr.t.nextSibling);
-		}
-	}
-	
-	// defaults
-	//nuxsr.mem.remind();
-	//nuxsr.f.nuxsr_regexp.checked = true;
-}
-	
 /* =====================================================
 	Box show/hide
    ===================================================== */
-nuxsr.showHide = function ()
-{
-	if (nuxsr.f.style.display=='none')
-	{
-		//var width_pre = nuxsr.t.clientWidth;
-		document.editform.messages.style.display='block';
-		nuxsr.f.style.display='block';
-		nuxsr.i.accessKey="none";
-		//nuxsr.t.style.width='auto';
-		nuxsr.s.focus();
-		/*
-		var width_post = nuxsr.t.clientWidth;
-		if (width_post != width_pre)
-		{
-			nuxsr.t.cols = Math.floor(width_pre * nuxsr.t.cols / width_post);
-		}
-		*/
+nuxsr.showHide = function() {
+
+	if ( !this.form ) {
+		//
+		// inserting search box
+		var srbox = document.createElement( 'div' );
+		srbox.innerHTML = nuxsr.boxHTML;
+		srbox.firstChild.style.display = 'none';
+
+		jQuery( this.t ).before( srbox );
+		this.srbox = srbox;
+		this.form = document.nuxsr_form;
+		this.s = document.nuxsr_form.nuxsr_search;
+		this.r = document.nuxsr_form.nuxsr_replace;
+
 	}
-	else
-	{
-		document.editform.messages.style.display='none';
-		nuxsr.f.style.display='none';
-		//nuxsr.t.style.width=nuxsr.w;
-		nuxsr.i.accessKey="F";
+
+	//
+	// inserting message box
+	if ( this.messages == undefined ) {
+		var el = document.createElement( 'textarea' );
+		el.cols = nuxsr.t.cols;
+		el.style.cssText = nuxsr.t.style.cssText;
+		el.rows = 5;
+		//el.id = 'messages';
+		el.style.display = 'none';
+		el.style.width = '100%';
+		el.style.boxSizing = 'border-box'
+		el.style.borderTop = '1px solid silver';
+		el.readOnly = true;
+		jQuery('.wikiEditor-ui-text').after(el);
+		nuxsr.messages = el;
+	}
+
+	// fix access key
+	if ( nuxsr.form.style.display == 'none' ) {
+		if (nuxsr.messages.value.length) {
+			nuxsr.messages.style.display = 'block';
+		}
+		nuxsr.form.style.display = 'block';
+		nuxsr.searchIcon.accessKey = "none";
+		nuxsr.s.focus();
+
+	} else {
+		nuxsr.messages.style.display = 'none';
+		nuxsr.form.style.display = 'none';
+		nuxsr.searchIcon.accessKey = "F";
 	}
 }
 
@@ -505,14 +358,14 @@ nuxsr.showHide = function ()
    ===================================================== */
 nuxsr.gotoLine = function ()
 {
-	if (nuxsr.f.nuxsr_goto_line.value=='')
+	if (nuxsr.form.nuxsr_goto_line.value=='')
 	{
 		nuxsr.t.focus();
 		return;
 	}
-	
-	var lineno = parseInt(nuxsr.f.nuxsr_goto_line.value);
-	
+
+	var lineno = parseInt(nuxsr.form.nuxsr_goto_line.value);
+
 	// search for the line
 	var index = (lineno==1) ? 0 : nuxsr.indexOfNthMatch (nuxsr.t.value, '\n', lineno-1);
 
@@ -533,7 +386,6 @@ nuxsr.gotoLine = function ()
 nuxsr.indexOfNthMatch = function (haystack, needle, n)
 {
     var index = -1;
-
     for (var i=1; i<=n && ((index=haystack.indexOf(needle, index+1)) != -1); i++)
     {
         if (i == n)
@@ -541,25 +393,9 @@ nuxsr.indexOfNthMatch = function (haystack, needle, n)
             return index;
 		}
     }
-
     return -1;
 }
 
-
-/* =====================================================
-	Run init on load
-   ===================================================== */
-if (mw.config.get('wgAction') == 'edit' || mw.config.get('wgAction') == 'submit')
-{
-	$(nuxsr.init);
-	// mainly because of the new toolbar
-	$(window).load(function() {
-		// re-add snooker box where it belongs
-		var el=document.getElementById('wpTextbox1');
-		if (el)
-			el.parentNode.insertBefore(nuxsr.srbox,el);
-	});
-}
 /* =====================================================
 	Memory module
    ===================================================== */
@@ -581,33 +417,6 @@ nuxsr.mem.remind = function()
 	nuxsr.s.value = nuxsr.mem.s[nuxsr.mem.index];
 	nuxsr.r.value = nuxsr.mem.r[nuxsr.mem.index];
 }
-
-//
-// Serial changes
-//
-/*
-var sr_seria = {
-	s : [
-		'\\*[ ]?(.*)\\n',
-		'(<li>(.|\\n)*</li>)',
-		'([ \\n><(),.])"',
-		'"([ \\n><(),.])',
-		' > ',
-		' < ',
-		' - '
-	]
-	,
-	r : [
-		'<li>$1</li>\\n',
-		'<ul>\\n$1\\n</ul>',
-		'$1„',
-		'”$1',
-		' › ',
-		' ‹ ',
-		' – '
-	]
-};
-*/
 nuxsr.mass_rep_htmlspecialchars = {
 	s : ['&',		'>',		'<'],
 	r : ['&amp;',	'&gt;',		'&lt;']
@@ -618,8 +427,8 @@ nuxsr.mass_rep = function (obj)
 	//
 	// always as regExp
 	//
-	var prev_ser_RE = nuxsr.f.nuxsr_regexp.checked;
-	nuxsr.f.nuxsr_regexp.checked = true;
+	var prev_ser_RE = nuxsr.form.nuxsr_regexp.checked;
+	nuxsr.form.nuxsr_regexp.checked = true;
 
 	/*
 	//
@@ -634,7 +443,7 @@ nuxsr.mass_rep = function (obj)
 	var selBB = sel_t.getSelBound(nuxsr.t);
 	var field_len = nuxsr.t.value.length;
 	var field_len_diff = 0;
-	
+
 	//
 	// replace
 	//
@@ -643,7 +452,7 @@ nuxsr.mass_rep = function (obj)
 		nuxsr.s.value = obj.s[i];
 		nuxsr.r.value = obj.r[i];
 		nuxsr.replaceAll();
-		
+
 		// recalculate end of the user's selection
 		if (selBB.start!=selBB.end)
 		{
@@ -651,20 +460,67 @@ nuxsr.mass_rep = function (obj)
 			selBB.end += field_len_diff;
 			field_len = nuxsr.t.value.length;
 		}
-		
+
 		sel_t.setSelBound(nuxsr.t, selBB, false);
 	}
 
 	//
 	// previous settings
 	//
-	nuxsr.f.nuxsr_regexp.checked = prev_ser_RE;
+	nuxsr.form.nuxsr_regexp.checked = prev_ser_RE;
 }
 
 //
 // Messages
 //
-nuxsr.msg = function (str)
-{
-	document.editform.messages.value = str+'\n'+document.editform.messages.value;
+nuxsr.msg = function(str) {
+	var el = nuxsr.messages;
+	el.style.display = 'block';
+	el.value = str + '\n' + el.value;
+}
+
+/* =====================================================
+	Init buttons
+   ===================================================== */
+nuxsr.init = function() {
+	var that = this;
+	mw.loader.using( "ext.gadget.lib-toolbar", function() {
+		toolbarGadget.addButton( {
+			title: 'Wyszukiwanie i zamiana (wer. ' + that.version + ')',
+			alt: 'Szuk.',
+			id: 'SearchIcon',
+			oldIcon: '//upload.wikimedia.org/wikipedia/commons/1/12/Button_find.png',
+			newIcon: '//commons.wikimedia.org/w/thumb.php?f=Crystal_Clear_action_viewmag.png&w=21',
+			onclick: function() {
+				that.showHide();
+			},
+			oncreate: function( button ) {
+				that.searchIcon = button;
+				that.searchIcon.accessKey = "F";
+			}
+		} );
+		toolbarGadget.addButton( {
+			title: 'Zmiana wielkości liter',
+			alt: 'Wlk. lit.',
+			id: 'SearchIcon',
+			oldIcon: '//upload.wikimedia.org/wikipedia/commons/1/12/Button_case.png',
+			newIcon: '//commons.wikimedia.org/w/thumb.php?f=Wynn.svg&w=23',
+			onclick: function() {
+				that.toggleCase();
+			}
+		} );
+	} );
+
+	jQuery( document ).ready( function() {
+		if (typeof document.editform !== 'undefined') {
+			that.t = document.editform.wpTextbox1;
+		}
+	} );
+}
+
+/* =====================================================
+	Run init on edit
+   ===================================================== */
+if ( mw.config.get( 'wgAction' ) == 'edit' || mw.config.get( 'wgAction' ) == 'submit' ) {
+	nuxsr.init();
 }
