@@ -10,13 +10,15 @@
 	+ search in edit area
 	+ replace found text
 	+ search and replace with regular expressions
-	+ memory
+	+ memory (basic functionality)
 	
-	version:    1.2.0
 	copyright:  (C) 2006 Zocky (en:User:Zocky), (C) 2006-2009 Maciej Jaros (pl:User:Nux, en:User:EcceNux)
 	licence:    GNU General Public License v2,
                 http://opensource.org/licenses/gpl-license.php
 \* ======================================================================== */
+	// version
+	var sr$ver = '1.4.1';
+// ----------
 
 //
 // Moduł(y) zewnętrzne
@@ -27,6 +29,15 @@ if ((typeof sel_t)!='object' || ((typeof sel_t)=='object' && (typeof sel_t.versi
 	+'script type="text/javascript" src="'
 	+'http://pl.wikipedia.org/w/index.php?title=Wikipedysta:Nux/sel_t.js'
 	+'&action=raw&ctype=text/javascript&dontcountme=s&ver110'
+	+'"><'
+	+'/script>');
+}
+if ((typeof nuxedtoolkit)!='object')
+{
+	document.write('<'
+	+'script type="text/javascript" src="'
+	+'http://pl.wikipedia.org/w/index.php?title=Wikipedysta:Nux/nuxedtoolkit.js'
+	+'&action=raw&ctype=text/javascript&dontcountme=s&ver100'
 	+'"><'
 	+'/script>');
 }
@@ -80,8 +91,7 @@ function srBack()
 	
 	if (res)
 	{
-		sr$t.selectionStart=res.index;
-		sr$t.selectionEnd=res.index+res[1].length;
+		sel_t.setSelRange (sr$t, res.index, res.index+res[1].length)
 	}
 	else
 		sr$t.selectionStart=sr$t.selectionEnd
@@ -120,8 +130,7 @@ function srNext(norev)
 	
 	if (res)
 	{
-		sr$t.selectionEnd=res.index+res[0].length;
-		sr$t.selectionStart=res.index;
+		sel_t.setSelRange (sr$t, res.index, res.index+res[0].length)
 	}
 	else
 		sr$t.selectionStart=sr$t.selectionEnd
@@ -176,7 +185,7 @@ function srReplace()
 					replaceString += replaceBits[i]
 				;
 			}
-			replaceString=replaceString.replace(/\\n/g,"\n").replace(/&backslash;/g,"\\").replace(/&dollar;/g,"\$")
+			replaceString=replaceString.replace(/\\n/g,"\n").replace(/\\t/g,"\t").replace(/&backslash;/g,"\\").replace(/&dollar;/g,"\$")
 		}
 		sr$t.value= sr$t.value.substring(0,sels) + replaceString + sr$t.value.substring(sele);
 	}
@@ -201,9 +210,17 @@ function srReplaceall()
 		searchString=searchString.replace(/([\[\]\{\}\|\.\*\?\(\)\$\^\\])/g,'\\$1');
 		replaceString=replaceString.replace(/([\$\\])/g,'\\$1');
 	}
+	else
+	{
+		replaceString=replaceString.replace(/\\n/g,"\n").replace(/\\t/g,"\t").replace(/&backslash;/g,"\\").replace(/&dollar;/g,"\$")
+	}
 	
 	var re=new RegExp(searchString, (sr$f.srCase.checked ? "g" : "gi"));
-	
+
+	//
+	// check for ocurrences
+	var matchesArr = str.match(re);
+
 	//
 	// run
 	str = str.replace(re, replaceString);
@@ -211,6 +228,15 @@ function srReplaceall()
 	//
 	// output
 	sel_t.qsetSelStr(sr$t, str, true);
+	// focus
+	sr$t.focus();
+
+	//
+	// show num of ocurrences
+	if (matchesArr.length)
+	{
+		sr_msg(sr$lang['_num_ ocurrences of _str_ replaced with _str_'].replace(/\$1/, matchesArr.length).replace(/\$2/, sr$s.value).replace(/\$3/, sr$r.value));
+	}
 
 	return;
 }
@@ -239,8 +265,7 @@ function srToggleCase()
 	srSync();
 }
 	
-	
-function srSync()
+function srSync_old()
 {
 	var i;
 	var allLines=0;
@@ -259,70 +284,113 @@ function srSync()
 	sr$t.focus();
 }
 	
+function srSync()
+{
+	var input = sr$t;
+
+	// IE
+	/*
+	if (document.selection)
+	{
+		//input.focus();
+		var range = document.selection.createRange();
+		if (range.parentElement()==input)
+		{
+			range.scrollIntoView(true); // at top
+		}
+		else if (input.selectionStart)
+		{
+			sel_t.setSelRange(input, input.selectionStart, input.selectionEnd)
+		}
+	}
+	*/
+	if (document.selection)
+	{
+	}
+	// fox
+	else	
+	{
+		sel_t.ScrollIntoView(input, input.selectionStart, input.selectionEnd);
+	}
+/*
+*/
+	sr$t.focus();
+}
+	
 	
 function srInit()
 {
 	if(document.getElementById('wpTextbox1'))
 	{
 		var srBoxCode =
-			'<form name="srForm"><table id="srBox" cellpadding="0" cellspacing="2">'
-			+'<tr>'
-				+'<td valign="bottom">'
-					+'<span class="label">znajdź:</span><br />'
-					+'<input size="17" type="text" name="srSearch" id="srSearch" accesskey="F" tabindex="8" onkeypress="event.which == 13 && srNext()"; value="" />'
-				+'</td>'
-				+'<td valign="bottom">'
-					+'<span class="label">zamień na:</span><br />'
-					+'<input size="17" type="text" name="srReplace" id="srReplace" accesskey="G" tabindex="9" onkeypress="event.which == 13 && srNext()"; value="" />'
-				+'</td>'
-				+'<td valign="top">'
-					+'<label><input type="checkbox" name="srCase" onclick="sr$t.focus()" tabindex="10" />uwzględnij wielkość liter</label>'
-					+'<label><input type="checkbox" name="srRegexp" onclick="sr$t.focus()" tabindex="11" />użyj RegEx</label>'
-					+'<br />'
-					+'<a href="javascript:srBack()" onmouseover="sr$t.focus()" title="szukaj wstecz [alt-2]" accesskey="2">&lt;</a>&nbsp;'
-					+'<a href="javascript:srNext()" onmouseover="sr$t.focus()" title="szukaj dalej [alt-3]" accesskey="3">szukaj&nbsp;&nbsp;&gt;</a>&emsp;'
-					+'<a href="javascript:srReplace();srBack()" onmouseover="sr$t.focus()" title="zamień znalezione i szukaj poprzedniego [alt-4]" accesskey="4">&lt;</a>&nbsp;'
-					+'<a href="javascript:srReplace()" onmouseover="sr$t.focus()" title="zamień znalezione">zamień</a>&nbsp;'
-					+'<a href="javascript:srReplace();srNext()" onmouseover="sr$t.focus()" title="zamień znalezione i szukaj następnego [alt-5]" accesskey="5">&gt;</a>&emsp;'
-					+'<a href="javascript:srReplaceall()" onmouseover="sr$t.focus()" title="zamień wszystkie wystąpienia, które zostaną znalezione [alt-7]" accesskey="7">zamień&nbsp;wszystkie</a>&emsp;'
-				+'</td>'
-			+'</tr>'
-			+'<tr>'
-				+'<td valign="top" colspan="3">'
-					+'<a href="javascript:sr_mem.remind()" style="background:inherit">MR</a> <a href="javascript:sr_mass_rep(sr_seria)">Wiki to HTML</a> <a href="javascript:sr_mass_rep(sr_seria_htmlspecialchars)">HTML Special Chars</a><br />'
-				+'</td>'
-			+'</tr>'
-			+'</table></form>'
+			'<form name="srForm"><div id="srBox">'
+				+'<div>'
+					+'<span style="float:left;padding-top:0px;">'
+						+'<span class="label">znajdź:</span><br />'
+						+'<input size="25" type="text" name="srSearch" id="srSearch" accesskey="F" tabindex="8" onkeypress="event.which == 13 && srNext()"; value="" />'
+					+'</span>'
+					+'<span style="float:left;padding-top:0px;">'
+						+'<span class="label">zamień na:</span><br />'
+						+'<input size="25" type="text" name="srReplace" id="srReplace" accesskey="G" tabindex="9" onkeypress="event.which == 13 && srNext()"; value="" />'
+					+'</span>'
+					+'<span>'
+						+'<label><input type="checkbox" name="srCase" onclick="sr$t.focus()" tabindex="10" />uwzględnij wielkość liter</label>'
+						+'<label><input type="checkbox" name="srRegexp" onclick="sr$t.focus()" tabindex="11" />użyj RegEx</label>'
+						+'<br />'
+						+'<a href="javascript:srBack()" onmouseover="sr$t.focus()" title="szukaj wstecz [alt-2]" accesskey="2">&lt;</a>&nbsp;'
+						+'<a href="javascript:srNext()" onmouseover="sr$t.focus()" title="szukaj dalej [alt-3]" accesskey="3">szukaj&nbsp;&nbsp;&gt;</a>&emsp;'
+						+'<a href="javascript:srReplace();srBack()" onmouseover="sr$t.focus()" title="zamień znalezione i szukaj poprzedniego [alt-4]" accesskey="4">&lt;</a>&nbsp;'
+						+'<a href="javascript:srReplace()" onmouseover="sr$t.focus()" title="zamień znalezione">zamień</a>&nbsp;'
+						+'<a href="javascript:srReplace();srNext()" onmouseover="sr$t.focus()" title="zamień znalezione i szukaj następnego [alt-5]" accesskey="5">&gt;</a>&emsp;'
+						+'<a href="javascript:srReplaceall()" onmouseover="sr$t.focus()" title="zamień wszystkie wystąpienia, które zostaną znalezione [alt-7]" accesskey="7">zamień&nbsp;wszystkie</a>&emsp;'
+					+'</span>'
+				+'</div>'
+				+'<div style="clear:both;padding-top:3px;">'
+					+'<span>'
+						+'<a href="javascript:sr_mem.remind()" style="background:inherit">MR</a>'
+						+' <a href="javascript:wiki_p.wiki2html()" title="Convert mediawiki-like code to HTML code">Wiki2HTML</a>'
+						+' <a href="javascript:mass_rep.quick_rep(sr$t, sr_seria_htmlspecialchars)" title="Convert special HTML chars to their entities">HTMLSpecialChars</a>'
+					+'</span>'
+				+'</div>'
+				+'<div style="clear:both"></div>'
+			+'</div></form>'
 		;
 	
-		document.getElementById('searchInput').accessKey='none';
+		//document.getElementById('searchInput').accessKey='none';
 		
 		sr$t=document.editform.wpTextbox1;
 		sr$w=sr$t.style.width;
 		
 		//
 		// inserting buttons
-		var btns=document.createElement('span');
-		btns.innerHTML=
-			'<a id="SearchIcon" href="javascript:srShowHide()">'
-				+'<img style="cursor: pointer;" title="Wyszukiwanie i zamiana" alt="Wyszukiwanie i zamiana" src="http://upload.wikimedia.org/wikipedia/en/1/12/Button_find.png" border="0" height="22" width="23">'
-			+'</a>'
-			+'<a href="javascript:srToggleCase()">'
-				+'<img style="cursor: pointer;" title="Zmiana wielkości liter" alt="Zmiana wielkości liter" src="http://upload.wikimedia.org/wikipedia/en/1/12/Button_case.png" border="0" height="22" width="23">'
-			+'</a>'
-		;
+		nuxedtoolkit.prepare();
+		var group_el = nuxedtoolkit.addGroup();
 		
-		var el=document.getElementById('toolbar');
-		if (el)
-		{
-			el.appendChild(btns)
+		var btn_attrs = {
+			title : 'Wyszukiwanie i zamiana (wer. '+sr$ver+')',
+			alt : "Szuk.",
+			style : "width:auto;height:auto",
+			id : 'SearchIcon'
 		}
-		else
-		{
-			el=document.getElementById('editform');
-			el.parentNode.insertBefore(btns,el);
+		var icons = {
+			oldbar : 'http://upload.wikimedia.org/wikipedia/en/1/12/Button_find.png',
+			newbar : 'http://commons.wikimedia.org/w/thumb.php?f=Crystal_Clear_action_viewmag.png&width=21px'
 		}
+		nuxedtoolkit.addBtn(group_el, 'srShowHide()', icons, btn_attrs)
 		
+		var btn_attrs = {
+			title : 'Zmiana wielkości liter',
+			alt : "Wlk. lit.",
+			style : "width:auto;height:auto"
+		}
+		var icons = {
+			oldbar : 'http://upload.wikimedia.org/wikipedia/commons/1/12/Button_case.png',
+			newbar : 'http://commons.wikimedia.org/w/thumb.php?f=Wynn.svg&width=23px'
+		}
+		nuxedtoolkit.addBtn(group_el, 'srToggleCase()', icons, btn_attrs)
+		/**/
+		
+		// fix access key
 		sr$i=document.getElementById('SearchIcon');
 		sr$i.accessKey="F";
 
@@ -332,7 +400,8 @@ function srInit()
 		srbox.innerHTML=srBoxCode;
 		srbox.firstChild.style.display='none';		
 		
-		el=document.getElementById('editform');
+		//el=document.getElementById('editform');
+		el=document.getElementById('wpTextbox1');
 		el.parentNode.insertBefore(srbox,el);
 		
 		sr$f=document.srForm;
@@ -363,11 +432,17 @@ function srShowHide()
 {
 	if (sr$f.style.display=='none')
 	{
+		var width_pre = sr$t.clientWidth;
 		document.editform.messages.style.display='block';
 		sr$f.style.display='block';
 		sr$i.accessKey="none";
 		sr$t.style.width='auto';
 		sr$s.focus();
+		var width_post = sr$t.clientWidth;
+		if (width_post != width_pre)
+		{
+			sr$t.cols = Math.floor(width_pre * sr$t.cols / width_post);
+		}
 	}
 	else
 	{
@@ -382,9 +457,9 @@ addOnloadHook(srInit);
 
 //</pre>
 
- document.write('<link rel="stylesheet" type="text/css" href=" \
- http://pl.wikipedia.org/w/index.php?title=Wikipedysta:Nux/SearchBox.css \
- &action=raw&ctype=text/css&dontcountme=s">');
+ document.write('<link rel="stylesheet" type="text/css" href="'
+ +'http://pl.wikipedia.org/w/index.php?title=Wikipedysta:Nux/SearchBox.css'
+ +'&action=raw&ctype=text/css&dontcountme=s">');
 
 //
 // Memory
