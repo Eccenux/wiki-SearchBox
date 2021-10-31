@@ -1,7 +1,16 @@
 /*
-; Instrukcja obsługi: [[Wikipedia:Narzędzia/Wyszukiwanie i zamiana]]
-; Autorzy: [[:en:User:Zocky]], Maciej Jaros [[:pl:User:Nux]]
-; Wykorzystana wersja skryptu Zocky: http://en.wikipedia.org/w/index.php?title=User:Zocky/SearchBox.js&oldid=60000195
+Instrukcja obsługi:
+http://pl.wikipedia.org/wiki/Wikipedia:Narz%C4%99dzia/Wyszukiwanie_i_zamiana
+
+Autorzy:
+[[:en:User:Zocky]], Maciej Jaros [[:pl:User:Nux]]
+Wykorzystana wersja skryptu Zocky:
+http://en.wikipedia.org/w/index.php?title=User:Zocky/SearchBox.js&oldid=60000195
+
+Dev version:
+http://pl.wikipedia.org/w/index.php?title=Wikipedysta:Nux/SearchBox.dev.js&action=edit
+User version:
+http://pl.wikipedia.org/w/index.php?title=MediaWiki:Gadget-searchbox.js&action=edit
 
 <pre>
 /* ======================================================================== *\
@@ -12,62 +21,79 @@
 	+ search and replace with regular expressions
 	+ memory (basic functionality)
 	
-	- not yet fully working with IE
+	+ Now supports IE!
 	
-	copyright:  (C) 2006 Zocky (en:User:Zocky), (C) 2006-2010 Maciej Jaros (pl:User:Nux, en:User:EcceNux)
+	copyright:  (C) 2006 Zocky (en:User:Zocky), (C) 2006-2011 Maciej Jaros (pl:User:Nux, en:User:EcceNux)
 	licence:    GNU General Public License v2,
                 http://opensource.org/licenses/gpl-license.php
 \* ======================================================================== */
 	// version
-	var tmp_VERSION = '2.0.0.dev2';  // = nuxsr.version = nuxsr.ver
+	var tmp_VERSION = '2.3.7';  // = nuxsr.version = nuxsr.ver
 // ----------
 
 /* =====================================================
-	External modules
+	I10n
    ===================================================== */
-if (typeof importScriptAtr=='undefined')
+var tmp_nuxsr_lang = {'_' : ''
+	,'_num_ ocurrences of _str_ replaced with _str_' : 'Zmieniono $1 wystąpień [$2] na [$3].'
+	,'searching from the beginning' : 'wyszukiwanie od początku'
+	,'error - jsAlert is undefined' :
+		'<p>Błąd krytyczny - brak wymaganych bibliotek!</p>'
+		+'<p>Do prawidłowego działania skrypt wymaga użycia biblioteki „<a href="//pl.wikipedia.org/wiki/MediaWiki:sftJSmsg.js">sftJSmsg</a>”.'
+	,'error - name conflict' :
+		'<p>Błąd krytyczny - konflikt nazw!</p>'
+		+'<p>Jeden ze skryptów używa już nazwy <tt>nuxsr</tt> jako zmienną globalną.</p>'
+	,'error - import nuxedtoolkit' :
+		'<p>Błąd krytyczny - brak wymaganych bibliotek!</p>'
+		+'<p>Do prawidłowego działania skrypt wymaga użycia biblioteki „<a href="//pl.wikipedia.org/wiki/MediaWiki:Nuxedtoolkit.js">nuxedtoolkit</a>”.'
+	,'error - import sel_t' :
+		'<p>Błąd krytyczny - brak wymaganych bibliotek!</p>'
+		+'<p>Do prawidłowego działania skrypt wymaga użycia biblioteki „<a href="//pl.wikipedia.org/wiki/MediaWiki:sel_t.js">sel_t</a>”.'
+};
+// 'Critical error - name conflict!\n\nOne of the scripts uses nuxsr as a global variable.'
+
+/* =====================================================
+	External libraries check
+   ===================================================== */
+if (wgAction == 'edit' || wgAction == 'submit')
 {
-	function importScriptAtr(page, atr)
-	{	
-		var uri = wgScript + '?atr='+atr+'&title=' +
-			encodeURIComponent(page.replace(/ /g,'_')).replace(/%2F/ig,'/').replace(/%3A/ig,':') +
-			'&action=raw&ctype=text/javascript';
-		importScriptURI(uri);
-	}
-}
-if ((typeof sel_t)!='object' || ((typeof sel_t)=='object' && (typeof sel_t.version)=='string' && sel_t.version.indexOf('1.1')==0))
-{
-	importScriptAtr('Wikipedysta:Nux/sel_t.js', 'ver120')
-}
-if ((typeof nuxedtoolkit)!='object')
-{
-	importScriptAtr('Wikipedysta:Nux/nuxedtoolkit.js', 'ver106')
+	$(function()
+	{
+		/*if (typeof(jsAlert)!='function')
+		{
+			// soft alert
+			var nel = document.createElement("div");
+			nel.style.cssText="position:absolute; width:50%; max-width:500px; background-color:white; border:1px solid black; padding:1em; z-index:10000";
+			nel.innerHTML = tmp_nuxsr_lang['error - jsAlert is undefined'];
+			document.body.insertBefore(nel, document.body.firstChild);
+		}*/
+		if (typeof(sel_t)!='object')
+		{
+			alert(tmp_nuxsr_lang['error - import sel_t']);
+			//importScript('User:Nux/sel_t.js')
+		}
+		if (typeof (nuxedtoolkit)!='object')
+		{
+			alert(tmp_nuxsr_lang['error - import nuxedtoolkit']);
+			//importScript('User:Nux/nuxedtoolkit.js')
+		}
+	});
 }
 
 /* =====================================================
 	CSS
    ===================================================== */
-document.write('<link rel="stylesheet" type="text/css" href="'
-+'http://pl.wikipedia.org/w/index.php?title=Wikipedysta:Nux/SearchBox.css'
-+'&action=raw&ctype=text/css&dontcountme=s">');
-
-
-/* =====================================================
-	Lang array / object
-   ===================================================== */
-var tmp_nuxsr_lang = {'_' : ''
-	,'_num_ ocurrences of _str_ replaced with _str_' : 'Zmieniono $1 wystąpień [$2] na [$3].'
-	,'searching from the beginning' : 'wyszukiwanie od początku'
-	,'name conflict error' : 'Błąd krytyczny - konflikt nazw!\n\nJeden ze skryptów używa już nazwy nuxsr jako zmienną globalną.'
-};
-// 'Critical error - name conflict!\n\nOne of the scripts uses nuxsr as a global variable.'
+if (wgAction == 'edit' || wgAction == 'submit')
+{
+	importStylesheet('User:Nux/SearchBox.css');
+}
 
 /* =====================================================
 	Object Init
    ===================================================== */
 if (nuxsr!=undefined)
 {
-	alert();
+	alert(tmp_nuxsr_lang['error - name conflict']);
 }
 var nuxsr = new Object();
 nuxsr.ver = nuxsr.version = tmp_VERSION;
@@ -88,8 +114,8 @@ nuxsr.btns =
 		},
 		icons :
 		{
-			oldbar : 'http://upload.wikimedia.org/wikipedia/en/1/12/Button_find.png',
-			newbar : 'http://commons.wikimedia.org/w/thumb.php?f=Crystal_Clear_action_viewmag.png&width=21px'
+			oldbar : '//upload.wikimedia.org/wikipedia/en/1/12/Button_find.png',
+			newbar : '//commons.wikimedia.org/w/thumb.php?f=Crystal_Clear_action_viewmag.png&w=21'
 		}
 	},
 	tc :
@@ -102,8 +128,8 @@ nuxsr.btns =
 		},
 		icons :
 		{
-			oldbar : 'http://upload.wikimedia.org/wikipedia/commons/1/12/Button_case.png',
-			newbar : 'http://commons.wikimedia.org/w/thumb.php?f=Wynn.svg&width=23px'
+			oldbar : '//upload.wikimedia.org/wikipedia/commons/1/12/Button_case.png',
+			newbar : '//commons.wikimedia.org/w/thumb.php?f=Wynn.svg&w=23'
 		}
 	}
 }
@@ -111,7 +137,7 @@ nuxsr.btns =
 //
 // search box code
 nuxsr.boxHTML =
-	'<form name="nuxsr_form"><div id="srBox">'
+	'<form name="nuxsr_form"><div id="srBox" style="line-height: 1.5em;">'
 		+'<div>'
 			+'<span style="float:left;padding-top:0px;">'
 				+'<span class="label">znajdź:</span><br />'
@@ -125,19 +151,23 @@ nuxsr.boxHTML =
 				+'<label><input type="checkbox" name="nuxsr_case" onclick="nuxsr.t.focus()" tabindex="10" />uwzględnij wielkość liter</label>'
 				+'<label><input type="checkbox" name="nuxsr_regexp" onclick="nuxsr.t.focus()" tabindex="11" />użyj RegEx</label>'
 				+'<br />'
-				+'<a href="javascript:nuxsr.back()" onmouseover="nuxsr.t.focus()" title="szukaj wstecz [alt-2]" accesskey="2">&lt;</a>&nbsp;'
-				+'<a href="javascript:nuxsr.next()" onmouseover="nuxsr.t.focus()" title="szukaj dalej [alt-3]" accesskey="3">szukaj&nbsp;&nbsp;&gt;</a>&emsp;'
-				+'<a href="javascript:nuxsr.replace();nuxsr.back()" onmouseover="nuxsr.t.focus()" title="zamień znalezione i szukaj poprzedniego [alt-4]" accesskey="4">&lt;</a>&nbsp;'
-				+'<a href="javascript:nuxsr.replace()" onmouseover="nuxsr.t.focus()" title="zamień znalezione">zamień</a>&nbsp;'
-				+'<a href="javascript:nuxsr.replace();nuxsr.next()" onmouseover="nuxsr.t.focus()" title="zamień znalezione i szukaj następnego [alt-5]" accesskey="5">&gt;</a>&emsp;'
-				+'<a href="javascript:nuxsr.replaceAll()" onmouseover="nuxsr.t.focus()" title="zamień wszystkie wystąpienia, które zostaną znalezione [alt-7]" accesskey="7">zamień&nbsp;wszystkie</a>&emsp;'
+				+'<a href="javascript:nuxsr.back()" title="szukaj wstecz [alt-2]" accesskey="2">&lt;</a>&nbsp;'
+				+'<a href="javascript:nuxsr.next()" title="szukaj dalej [alt-3]" accesskey="3">szukaj&nbsp;&nbsp;&gt;</a> &nbsp; '
+				+'<a href="javascript:nuxsr.replace();nuxsr.back()" title="zamień znalezione i szukaj poprzedniego [alt-4]" accesskey="4">&lt;</a>&nbsp;'
+				+'<a href="javascript:nuxsr.replace()" title="zamień znalezione">zamień</a>&nbsp;'
+				+'<a href="javascript:nuxsr.replace();nuxsr.next()" title="zamień znalezione i szukaj następnego [alt-5]" accesskey="5">&gt;</a> &nbsp; '
+				+'<a href="javascript:nuxsr.replaceAll()" title="zamień wszystkie wystąpienia, które zostaną znalezione [alt-7]" accesskey="7">zamień&nbsp;wszystkie</a> &nbsp; '
 			+'</span>'
 		+'</div>'
 		+'<div style="clear:both;padding-top:3px;">'
 			+'<span>'
 				+'<a href="javascript:nuxsr.mem.remind()" style="background:inherit">MR</a>'
-				+' <a href="javascript:wiki_p.wiki2html()" title="Convert mediawiki-like code to HTML code">Wiki2HTML</a>'
-				+' <a href="javascript:mass_rep.quick_rep(nuxsr.t, sr_seria_htmlspecialchars)" title="Convert special HTML chars to their entities">HTMLSpecialChars</a>'
+		//		+' <a href="javascript:nuxsr.mass_rep(nuxsr.mass_rep_htmlspecialchars)" title="Zamień specjalne znaki HTML na encje HTML">HTMLSpecialChars</a>'
+			+'</span>'
+			+' &nbsp; '
+			+'<span>'
+				+'<a href="javascript:nuxsr.gotoLine()" style="background:inherit" title="Skok do wiersza o podanym numerze.">Do wiersza:</a>'
+				+' <input type="text" name="nuxsr_goto_line" tabindex="12" style="width:55px" />'
 			+'</span>'
 		+'</div>'
 		+'<div style="clear:both"></div>'
@@ -193,28 +223,30 @@ nuxsr.back = function ()
 		nuxsr.t.focus();
 		return;
 	}
-	
-	var searchString = nuxsr.getSearchString();
 
-	// set up for search backword and execute
-	searchString="("+searchString+")(?![\\s\\S]*"+searchString+")";
+	var searchString = nuxsr.getSearchString();
+	var selBB = sel_t.getSelBound(nuxsr.t);
+
+	// set up greedy search to get the last match of the searchString
+	searchString="^([\\s\\S]*)("+searchString+")";
 	var re=new RegExp(searchString, (nuxsr.f.nuxsr_case.checked ? "" : "i"));
-	var res = re.exec (nuxsr.t.value.substring(0,nuxsr.t.selectionStart));
+	var res = re.exec (nuxsr.t.value.substring(0,selBB.start));
 	if (!res)
 	{
 		var res = re.exec (nuxsr.t.value)
 	}
-	
+
 	// set up selection
 	if (res)
 	{
-		sel_t.setSelRange (nuxsr.t, res.index, res.index+res[1].length)
+		sel_t.setSelRange (nuxsr.t, res[1].length, res[1].length+res[2].length)
 	}
 	else
 	{
-		nuxsr.t.selectionStart=nuxsr.t.selectionEnd
+		selBB.start = selBB.end;
+		sel_t.setSelBound (nuxsr.t, selBB, false);
 	}
-	
+
 	// move to selection
 	nuxsr.sync();
 }
@@ -228,10 +260,11 @@ nuxsr.next = function (norev)
 	}
 	
 	var searchString = nuxsr.getSearchString();
+	var selBB = sel_t.getSelBound(nuxsr.t);
 	
 	// set up for search forward and execute
 	var re=new RegExp(searchString, (nuxsr.f.nuxsr_case.checked ? "g" : "gi"));
-	re.lastIndex=nuxsr.t.selectionEnd;
+	re.lastIndex=selBB.end;
 	var res = re.exec (nuxsr.t.value)
 	if (!res && !norev)
 	{
@@ -247,7 +280,8 @@ nuxsr.next = function (norev)
 	}
 	else
 	{
-		nuxsr.t.selectionStart=nuxsr.t.selectionEnd
+		selBB.start = selBB.end;
+		sel_t.setSelBound (nuxsr.t, selBB, false);
 	}
 	
 	// move to selection
@@ -267,6 +301,7 @@ nuxsr.replace = function ()
 	// get attributes
 	var searchString = nuxsr.getSearchString();
 	var replaceString = nuxsr.getReplaceString();
+	var selBB = sel_t.getSelBound(nuxsr.t);
 	
 	var re=new RegExp(searchString, (nuxsr.f.nuxsr_case.checked ? "g" : "gi"));
 
@@ -281,7 +316,7 @@ nuxsr.replace = function ()
 		
 		// save selection
 		var sel_tmp = {
-			start : nuxsr.t.selectionStart,
+			start : selBB.start,
 			strlen_post : str.length
 		}
 		
@@ -339,52 +374,33 @@ nuxsr.replaceAll = function ()
    ===================================================== */
 nuxsr.toggleCase = function ()
 {
-	var sels=nuxsr.t.selectionStart;
-	var sele=nuxsr.t.selectionEnd;
-	var selr=nuxsr.t.value.length-sele;
-	var selt=nuxsr.t.value.substring(sels,sele);
-	
-	if (sele>sels)
+	var selBB = sel_t.getSelBound(nuxsr.t);
+	if (selBB.end>selBB.start)
 	{
-		if (selt==selt.toUpperCase())
-			selt=selt.toLowerCase()
-		else if (selt==selt.toLowerCase() && sele-sels>1)
-			selt=selt.substring(0,1).toUpperCase()+selt.substring(1).toLowerCase()
+		var str = sel_t.getSelStr(nuxsr.t);
+		if (str==str.toUpperCase())
+		{
+			str = str.toLowerCase()
+		}
+		else if (str==str.toLowerCase() && selBB.end-selBB.start>1)
+		{
+			str = str.substring(0,1).toUpperCase()+str.substring(1).toLowerCase()
+		}
 		else
-			selt=selt.toUpperCase()
-		;
+		{
+			str = str.toUpperCase()
+		}
 		
-		nuxsr.t.value = nuxsr.t.value.substring(0,sels) + selt + nuxsr.t.value.substring(sele);
-		nuxsr.t.selectionStart=sels;
-		nuxsr.t.selectionEnd=sele>sels ? nuxsr.t.value.length-selr : sels;
+		// set selection with new value
+		sel_t.setSelStr(nuxsr.t, str, false);
 	}
 	nuxsr.sync();
 }
 
 /* =====================================================
-	Move selection to view
+	Move focus back to the textarea
+	(previously moved selection to view)
    ===================================================== */
-/*
-nuxsr.sync_old = function ()
-{
-	var i;
-	var allLines=0;
-	var lineNo=0;
-	var w=nuxsr.t.cols-5;
-	
-	var dummy=nuxsr.t.value.split("\n");
-	for (i=0;i<dummy.length;i++){allLines+=Math.ceil(dummy[i].length/w)}
-	
-	var dummy=nuxsr.t.value.substring(0,nuxsr.t.selectionStart).split("\n");
-	for (i=0;i<dummy.length;i++){lineNo+=Math.ceil(dummy[i].length/w)}
-	
-//	alert (w+" "+lineNo+"/"+allLines);
-
-	nuxsr.t.scrollTop=nuxsr.t.scrollHeight*(lineNo-10)/allLines;
-	nuxsr.t.focus();
-}
-*/
-	
 nuxsr.sync = function ()
 {
 	nuxsr.t.focus();
@@ -428,6 +444,7 @@ nuxsr.init = function ()
 		//el=document.getElementById('editform');
 		el=document.getElementById('wpTextbox1');
 		el.parentNode.insertBefore(srbox,el);
+		nuxsr.srbox = srbox;
 		
 		nuxsr.f=document.nuxsr_form;
 		nuxsr.s=document.nuxsr_form.nuxsr_search;
@@ -484,21 +501,78 @@ nuxsr.showHide = function ()
 }
 
 /* =====================================================
+	Go to a line given in the form field
+   ===================================================== */
+nuxsr.gotoLine = function ()
+{
+	if (nuxsr.f.nuxsr_goto_line.value=='')
+	{
+		nuxsr.t.focus();
+		return;
+	}
+	
+	var lineno = parseInt(nuxsr.f.nuxsr_goto_line.value);
+	
+	// search for the line
+	var index = (lineno==1) ? 0 : nuxsr.indexOfNthMatch (nuxsr.t.value, '\n', lineno-1);
+
+	// set up selection
+	if (index>=0)
+	{
+		if (index>0)	// move after new line character
+		{
+			index++;
+		}
+		sel_t.setSelRange (nuxsr.t, index, index)
+	}
+	
+	// move to selection
+	nuxsr.sync();
+}
+// little helper fun
+nuxsr.indexOfNthMatch = function (haystack, needle, n)
+{
+    var index = -1;
+
+    for (var i=1; i<=n && ((index=haystack.indexOf(needle, index+1)) != -1); i++)
+    {
+        if (i == n)
+		{
+            return index;
+		}
+    }
+
+    return -1;
+}
+
+
+/* =====================================================
 	Run init on load
    ===================================================== */
-addOnloadHook(nuxsr.init);
-
+if (wgAction == 'edit' || wgAction == 'submit')
+{
+	$(nuxsr.init);
+	// mainly because of the new toolbar
+	$(window).load(function() {
+		// re-add snooker box where it belongs
+		var el=document.getElementById('wpTextbox1');
+		if (el)
+			el.parentNode.insertBefore(nuxsr.srbox,el);
+	});
+}
 /* =====================================================
 	Memory module
    ===================================================== */
-nuxsr.mem = new Object();
-nuxsr.mem.s = new Array(
-	//'(.*)(\\n\\n|$)'
-	'((.|.\\n.)+)(\\n\\n|$)'
-);
-nuxsr.mem.r = new Array(
-	'<p>$1</p>\\n\\n'
-);
+nuxsr.mem = {
+s : [
+	' - ',
+	'"(.*?)"([^>])'
+],
+r : [
+	' – ',
+	'„$1”$2'
+]
+};
 nuxsr.mem.index = -1;
 nuxsr.mem.remind = function()
 {
@@ -511,6 +585,7 @@ nuxsr.mem.remind = function()
 //
 // Serial changes
 //
+/*
 var sr_seria = {
 	s : [
 		'\\*[ ]?(.*)\\n',
@@ -532,13 +607,13 @@ var sr_seria = {
 		' – '
 	]
 };
-
-var sr_seria_htmlspecialchars = {
+*/
+nuxsr.mass_rep_htmlspecialchars = {
 	s : ['&',		'>',		'<'],
 	r : ['&amp;',	'&gt;',		'&lt;']
 };
 
-function sr_mass_rep(obj)
+nuxsr.mass_rep = function (obj)
 {
 	//
 	// always as regExp
@@ -546,18 +621,17 @@ function sr_mass_rep(obj)
 	var prev_ser_RE = nuxsr.f.nuxsr_regexp.checked;
 	nuxsr.f.nuxsr_regexp.checked = true;
 
+	/*
 	//
 	// always from the beginning
 	//
-	/*
-	// nuxsr.t.selectionStart = nuxsr.t.selectionEnd = 0;
-	if (nuxsr.t.selectionStart == nuxsr.t.selectionEnd)
-	{
-		nuxsr.t.selectionStart = nuxsr.t.selectionEnd = 0;
-	}
+	var selBB = {start:0, end:0};
+	sel_t.setSelBound(nuxsr.t, selBB, false);
 	*/
-	var user_sel_start = nuxsr.t.selectionStart;
-	var user_sel_end = nuxsr.t.selectionEnd;
+	//
+	// Set up selection vars
+	//
+	var selBB = sel_t.getSelBound(nuxsr.t);
 	var field_len = nuxsr.t.value.length;
 	var field_len_diff = 0;
 	
@@ -571,15 +645,14 @@ function sr_mass_rep(obj)
 		nuxsr.replaceAll();
 		
 		// recalculate end of the user's selection
-		if (user_sel_start!=user_sel_end)
+		if (selBB.start!=selBB.end)
 		{
 			field_len_diff = nuxsr.t.value.length - field_len; // change after replacing stuff
-			user_sel_end += field_len_diff;
+			selBB.end += field_len_diff;
 			field_len = nuxsr.t.value.length;
 		}
-
-		nuxsr.t.selectionStart = user_sel_start;
-		nuxsr.t.selectionEnd = user_sel_end;
+		
+		sel_t.setSelBound(nuxsr.t, selBB, false);
 	}
 
 	//
