@@ -11,7 +11,14 @@ Dev version:
 http://pl.wikipedia.org/w/index.php?title=Wikipedysta:Nux/SearchBox.dev.js&action=edit
 User version:
 http://pl.wikipedia.org/w/index.php?title=MediaWiki:Gadget-searchbox.js&action=edit
+Github:
+https://github.com/Eccenux/wiki-SearchBox
 */
+/* eslint-disable array-bracket-newline */
+/* eslint-disable no-useless-escape */
+/* global mw, jQuery */
+/* global sel_t, toolbarGadget */
+/* global nuxsr */
 
 /* Translatable strings */
 mw.messages.set( {
@@ -385,29 +392,29 @@ nuxsr.gotoLine = function ()
 // little helper fun
 nuxsr.indexOfNthMatch = function (haystack, needle, n)
 {
-    var index = -1;
-    for (var i=1; i<=n && ((index=haystack.indexOf(needle, index+1)) != -1); i++)
-    {
-        if (i == n)
+	var index = -1;
+	for (var i=1; i<=n && ((index=haystack.indexOf(needle, index+1)) != -1); i++)
+	{
+		if (i == n)
 		{
-            return index;
+			return index;
 		}
-    }
-    return -1;
+	}
+	return -1;
 }
 
 /* =====================================================
 	Memory module
    ===================================================== */
 nuxsr.mem = {
-s : [
-	' - ',
-	'"(.*?)"([^>])'
-],
-r : [
-	' – ',
-	'„$1”$2'
-]
+	s : [
+		' - ',
+		'"(.*?)"([^>])'
+	],
+	r : [
+		' – ',
+		'„$1”$2'
+	]
 };
 nuxsr.mem.index = -1;
 nuxsr.mem.remind = function()
