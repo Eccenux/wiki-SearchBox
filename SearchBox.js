@@ -1,21 +1,39 @@
-// Instrukcja obsługi: [[Wikipedia:Narzędzia/Wyszukiwanie i zamiana]]
-// Autorzy: [[:en:User:Zocky]], Maciej Jaros [[:pl:User:Nux]]
-// Wersja tłumaczona skryptu: http://en.wikipedia.org/w/index.php?title=User:Zocky/SearchBox.js&oldid=60000195
-// <pre>
+/*
+; Instrukcja obsługi: [[Wikipedia:Narzędzia/Wyszukiwanie i zamiana]]
+; Autorzy: [[:en:User:Zocky]], Maciej Jaros [[:pl:User:Nux]]
+; Wykorzystana wersja skryptu Zocky: http://en.wikipedia.org/w/index.php?title=User:Zocky/SearchBox.js&oldid=60000195
+
+<pre>
 /* ======================================================================== *\
     Search box for Mediawiki
 	
 	+ search in edit area
 	+ replace found text
 	+ search and replace with regular expressions
-	+ 
+	+ memory
 	
-	version:    1.0.0
-	copyright:  (C) 2006-2007 Zocky (en:User:Zocky), Maciej Jaros (pl:User:Nux, en:User:EcceNux)
+	version:    1.2.0
+	copyright:  (C) 2006 Zocky (en:User:Zocky), (C) 2006-2009 Maciej Jaros (pl:User:Nux, en:User:EcceNux)
 	licence:    GNU General Public License v2,
                 http://opensource.org/licenses/gpl-license.php
 \* ======================================================================== */
 
+//
+// Moduł(y) zewnętrzne
+//
+if ((typeof sel_t)!='object' || ((typeof sel_t)=='object' && (typeof sel_t.version)=='string' && sel_t.version.indexOf('1.0')==0))
+{
+	document.write('<'
+	+'script type="text/javascript" src="'
+	+'http://pl.wikipedia.org/w/index.php?title=Wikipedysta:Nux/sel_t.js'
+	+'&action=raw&ctype=text/javascript&dontcountme=s&ver110'
+	+'"><'
+	+'/script>');
+}
+
+//
+// Zmienne globalne
+//
 var sr$t;	// sr$t=document.editform.wpTextbox1;
 var sr$f;	// sr$f=document.srForm;
 var sr$s;	// sr$s=document.srForm.srSearch;
@@ -26,7 +44,7 @@ var sr$i;	// sr$i=document.getElementById('SearchIcon');
 var sr$lang = {
 //	'_num_ ocurrences of _str_ replaced' : '$1 ocurrences of $2 replaced.'
 //	'_num_ ocurrences of _str_ replaced' : 'Zmieniono $1 wystąpień #$2#.'
-	'_num_ ocurrences of _str_ replaced with _str_' : 'Zmieniono $1 wystąpień [$2] na [$3].'
+	'_num_ ocurrences of _str_ replaced with _str_' : 'Zmieniono $1 wystąpień [$2] na [$3].',
 	'searching from the beginning' : 'wyszukiwanie od początku'
 };
 
@@ -170,43 +188,31 @@ function srReplace()
 	
 function srReplaceall()
 {
-	var sel_end = sr$t.value.length;
-	if (sr$t.selectionStart == sr$t.selectionEnd)
-	{
-		sr$t.selectionStart = sr$t.selectionEnd = 0;
-	}
-	else
-	{
-		sel_end = sr$t.selectionEnd;
-		sr$t.selectionEnd = sr$t.selectionStart;
-	}
-	var field_len = sr$t.value.length;
-	var field_len_diff = 0;
+	//
+	// get string
+	var str = sel_t.getSelStr(sr$t, true);
 	
-	var replaceCounter=0;
-	do
+	//
+	// get attributes
+	var searchString = sr$s.value;
+	var replaceString = sr$r.value;
+	if (!sr$f.srRegexp.checked)
 	{
-		// next without flipping to the beggining
-		srNext(true);
-		
-		// if finished OR reached end of users selection
-		if (sr$t.selectionStart==sr$t.selectionEnd || sr$t.selectionEnd>sel_end)
-			break;
-
-		srReplace();
-
-		// recalculate end of the user's selection
-		field_len_diff = sr$t.value.length - field_len; // change after replacing stuff
-		sel_end += field_len_diff;
-		field_len = sr$t.value.length;
-		
-		replaceCounter++;
+		searchString=searchString.replace(/([\[\]\{\}\|\.\*\?\(\)\$\^\\])/g,'\\$1');
+		replaceString=replaceString.replace(/([\$\\])/g,'\\$1');
 	}
-	while (sr$t.selectionStart!=sr$t.selectionEnd);
-	sr_msg(sr$lang['_num_ ocurrences of _str_ replaced with _str_'].replace(/\$1/, replaceCounter).replace(/\$2/, sr$s.value).replace(/\$3/, sr$r.value));
-	sr$t.selectionStart = sr$t.selectionEnd = 0;
+	
+	var re=new RegExp(searchString, (sr$f.srCase.checked ? "g" : "gi"));
+	
+	//
+	// run
+	str = str.replace(re, replaceString);
+	
+	//
+	// output
+	sel_t.qsetSelStr(sr$t, str, true);
 
-	// ## window.status = replaceCounter+" ocurrences of " + searchString + " replaced.";
+	return;
 }
 
 function srToggleCase()
@@ -321,7 +327,7 @@ function srInit()
 		sr$i.accessKey="F";
 
 		//
-		// inserting box
+		// inserting search box
 		var srbox=document.createElement('div');
 		srbox.innerHTML=srBoxCode;
 		srbox.firstChild.style.display='none';		
@@ -332,6 +338,20 @@ function srInit()
 		sr$f=document.srForm;
 		sr$s=document.srForm.srSearch;
 		sr$r=document.srForm.srReplace;
+
+		//
+		// inserting message box
+		if (document.editform.messages == undefined)
+		{
+			el=document.createElement('textarea');
+			el.cols=sr$t.cols;
+			el.style.cssText=sr$t.style.cssText;
+			el.rows=5;
+			el.id='messages';
+			el.style.display='none';
+			el.style.width='auto';
+			sr$t.parentNode.insertBefore(el,sr$t.nextSibling);
+		}
 	}
 	
 	// defaults
@@ -343,6 +363,7 @@ function srShowHide()
 {
 	if (sr$f.style.display=='none')
 	{
+		document.editform.messages.style.display='block';
 		sr$f.style.display='block';
 		sr$i.accessKey="none";
 		sr$t.style.width='auto';
@@ -350,6 +371,7 @@ function srShowHide()
 	}
 	else
 	{
+		document.editform.messages.style.display='none';
 		sr$f.style.display='none';
 		sr$t.style.width=sr$w;
 		sr$i.accessKey="F";
@@ -404,9 +426,9 @@ sr_seria.r = new Array(
 	'<ul>\\n$1\\n</ul>',
 	'$1„',
 	'”$1',
-	' &rarr; ',
-	' &larr; ',
-	' &ndash; '
+	' → ',
+	' ← ',
+	' – '
 );
 var sr_seria_htmlspecialchars = new Object();
 sr_seria_htmlspecialchars.s = new Array(
