@@ -28,7 +28,7 @@ http://pl.wikipedia.org/w/index.php?title=MediaWiki:Gadget-searchbox.js&action=e
                 http://opensource.org/licenses/gpl-license.php
 \* ======================================================================== */
 	// version
-	var tmp_VERSION = '2.3.7';  // = nuxsr.version = nuxsr.ver
+	var tmp_VERSION = '2.3.7mw';  // = nuxsr.version = nuxsr.ver
 // ----------
 
 /* =====================================================
@@ -55,7 +55,7 @@ var tmp_nuxsr_lang = {'_' : ''
 /* =====================================================
 	External libraries check
    ===================================================== */
-if (wgAction == 'edit' || wgAction == 'submit')
+if (mw.config.get('wgAction') == 'edit' || mw.config.get('wgAction') == 'submit')
 {
 	$(function()
 	{
@@ -83,7 +83,7 @@ if (wgAction == 'edit' || wgAction == 'submit')
 /* =====================================================
 	CSS
    ===================================================== */
-if (wgAction == 'edit' || wgAction == 'submit')
+if (mw.config.get('wgAction') == 'edit' || mw.config.get('wgAction') == 'submit')
 {
 	importStylesheet('User:Nux/SearchBox.css');
 }
@@ -549,7 +549,7 @@ nuxsr.indexOfNthMatch = function (haystack, needle, n)
 /* =====================================================
 	Run init on load
    ===================================================== */
-if (wgAction == 'edit' || wgAction == 'submit')
+if (mw.config.get('wgAction') == 'edit' || mw.config.get('wgAction') == 'submit')
 {
 	$(nuxsr.init);
 	// mainly because of the new toolbar
