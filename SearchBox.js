@@ -31,7 +31,7 @@ mw.messages.set( {
  */
 window.nuxsr = {
 	/** Version of the gadget */
-	version: '2.5.1'
+	version: '2.5.2'
 };
 
 
@@ -101,6 +101,7 @@ nuxsr.messages = null;
 /** @type {Element} SR main button. */
 nuxsr.searchButton = null;
 
+
 /* =====================================================
 	Common replace/search functions
    ===================================================== */
@@ -130,6 +131,49 @@ nuxsr.getReplaceString = function ()
 	}
 	return str;
 };
+
+/**
+ * Local storage key.
+ */
+nuxsr.storageKey = 'userjs.nuxsr';
+/**
+ * Save inputs to LS.
+ */
+nuxsr.saveInputs = function () {
+	var data = {
+		s:this.form.nuxsr_search.value,
+		r:this.form.nuxsr_replace.value,
+		case:this.form.nuxsr_case.checked,
+		regexp:this.form.nuxsr_regexp.checked,
+	};
+	console.log('[nuxsr] saveInputs', data);
+	localStorage.setItem(this.storageKey, JSON.stringify(data));
+}
+/**
+ * Restore inputs from LS.
+ */
+nuxsr.restoreInputs = function () {
+	var raw = localStorage.getItem(this.storageKey);
+	if (raw == null) {
+		return false;
+	}
+	try {
+		var data = JSON.parse(raw);
+	} catch (error) {
+		console.error('[nuxsr] restoreInputs; error parsing object:', raw);
+	}
+	if (typeof data !== 'object') {
+		return;
+	}
+	
+	console.log('[nuxsr] restoreInputs', data);
+	this.form.nuxsr_search.value = data.s;
+	this.form.nuxsr_replace.value = data.r;
+	this.form.nuxsr_case.checked = data.case;
+	this.form.nuxsr_regexp.checked = data.regexp;
+
+	return true;
+}
 
 /* =====================================================
 	Search functions
@@ -341,6 +385,12 @@ nuxsr.showHide = function() {
 		this.form = document.nuxsr_form;
 		this.s = document.nuxsr_form.nuxsr_search;
 		this.r = document.nuxsr_form.nuxsr_replace;
+
+		// init data (re)store
+		nuxsr.restoreInputs();
+		jQuery('input', srbox).on('change', function(){
+			nuxsr.saveInputs();
+		});
 	}
 
 	//
