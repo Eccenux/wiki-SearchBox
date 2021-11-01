@@ -15,12 +15,11 @@ See more at: https://pl.wikipedia.org/w/index.php?title=MediaWiki:Gadget-searchb
 Forked script version:
 http://en.wikipedia.org/w/index.php?title=User:Zocky/SearchBox.js&oldid=60000195
 
-Dev version:
-http://pl.wikipedia.org/w/index.php?title=Wikipedysta:Nux/SearchBox.dev.js&action=edit
-User version:
-http://pl.wikipedia.org/w/index.php?title=MediaWiki:Gadget-searchbox.js&action=edit
-Github:
-https://github.com/Eccenux/wiki-SearchBox
+Releases
+--------
+* Dev version: http://pl.wikipedia.org/w/index.php?title=Wikipedysta:Nux/SearchBox.dev.js&action=edit
+* User version: http://pl.wikipedia.org/w/index.php?title=MediaWiki:Gadget-searchbox.js&action=edit
+* Github: https://github.com/Eccenux/wiki-SearchBox
 
 Dev notes
 ---------
