@@ -51,7 +51,7 @@ nuxsr.boxHtml = function(options) {
 		+'<div>'
 			+'<span style="float:left;padding-top:0px;">'
 				+'<span class="label">znajdź:</span><br />'
-				+'<input size="25" type="text" name="nuxsr_search" id="nuxsr_search" accesskey="F" tabindex="'+(ti+1)+'" onkeypress="event.which == 13 && nuxsr.next()"; value="" />'
+				+'<input size="25" type="text" name="nuxsr_search" id="nuxsr_search" title="[alt+shift+F]" accesskey="F" tabindex="'+(ti+1)+'" onkeypress="event.which == 13 && nuxsr.next()"; value="" />'
 			+'</span>'
 			+'<span style="float:left;padding-top:0px;">'
 				+'<span class="label">zamień na:</span><br />'
@@ -61,12 +61,12 @@ nuxsr.boxHtml = function(options) {
 				+'<label><input type="checkbox" name="nuxsr_case" onclick="nuxsr.t.focus()" tabindex="'+(ti+3)+'" />uwzględnij wielkość liter</label>'
 				+'<label><input type="checkbox" name="nuxsr_regexp" onclick="nuxsr.t.focus()" tabindex="'+(ti+4)+'" />użyj RegEx</label>'
 				+'<br />'
-				+'<a href="javascript:nuxsr.back()" title="szukaj wstecz [alt-2]" accesskey="2" tabindex="'+(ti+5)+'">&lt;</a>&nbsp;'
-				+'<a href="javascript:nuxsr.next()" title="szukaj dalej [alt-3]" accesskey="3" tabindex="'+(ti+6)+'">szukaj&nbsp;&nbsp;&gt;</a> &nbsp; '
-				+'<a href="javascript:nuxsr.replace();nuxsr.back()" title="zamień znalezione i szukaj poprzedniego [alt-4]" accesskey="4" tabindex="'+(ti+7)+'">&lt;</a>&nbsp;'
+				+'<a href="javascript:nuxsr.back()" title="szukaj wstecz [alt+shift+2]" accesskey="2" tabindex="'+(ti+5)+'">&lt;</a>&nbsp;'
+				+'<a href="javascript:nuxsr.next()" title="szukaj dalej [alt+shift+3]" accesskey="3" tabindex="'+(ti+6)+'">szukaj&nbsp;&nbsp;&gt;</a> &nbsp; '
+				+'<a href="javascript:nuxsr.replace();nuxsr.back()" title="zamień znalezione i szukaj poprzedniego [alt+shift+4]" accesskey="4" tabindex="'+(ti+7)+'">&lt;</a>&nbsp;'
 				+'<a href="javascript:nuxsr.replace()" title="zamień znalezione" tabindex="'+(ti+8)+'">zamień</a>&nbsp;'
-				+'<a href="javascript:nuxsr.replace();nuxsr.next()" title="zamień znalezione i szukaj następnego [alt-5]" accesskey="5" tabindex="'+(ti+8)+'">&gt;</a> &nbsp; '
-				+'<a href="javascript:nuxsr.replaceAll()" title="zamień wszystkie wystąpienia, które zostaną znalezione [alt-7]" accesskey="7" tabindex="'+(ti+9)+'">zamień&nbsp;wszystkie</a> &nbsp; '
+				+'<a href="javascript:nuxsr.replace();nuxsr.next()" title="zamień znalezione i szukaj następnego [alt+shift+5]" accesskey="5" tabindex="'+(ti+8)+'">&gt;</a> &nbsp; '
+				+'<a href="javascript:nuxsr.replaceAll()" title="zamień wszystkie wystąpienia, które zostaną znalezione [alt+shift+7]" accesskey="7" tabindex="'+(ti+9)+'">zamień&nbsp;wszystkie</a> &nbsp; '
 			+'</span>'
 		+'</div>'
 		+'<div style="clear:both;padding-top:3px;">'
@@ -96,6 +96,10 @@ nuxsr.s = null;
 nuxsr.r = null;
 /** @type {Element} The form container. */
 nuxsr.srbox = null;
+/** @type {Element} SR messages textarea. */
+nuxsr.messages = null;
+/** @type {Element} SR main button. */
+nuxsr.searchButton = null;
 
 /* =====================================================
 	Common replace/search functions
@@ -341,7 +345,7 @@ nuxsr.showHide = function() {
 
 	//
 	// inserting message box
-	if ( this.messages == undefined ) {
+	if ( !this.messages ) {
 		var el = document.createElement( 'textarea' );
 		el.cols = nuxsr.t.cols;
 		el.style.cssText = nuxsr.t.style.cssText;
@@ -362,13 +366,13 @@ nuxsr.showHide = function() {
 			nuxsr.messages.style.display = 'block';
 		}
 		nuxsr.form.style.display = 'block';
-		nuxsr.searchIcon.accessKey = "none";
+		nuxsr.searchButton.accessKey = "none";
 		nuxsr.s.focus();
 
 	} else {
 		nuxsr.messages.style.display = 'none';
 		nuxsr.form.style.display = 'none';
-		nuxsr.searchIcon.accessKey = "F";
+		nuxsr.searchButton.accessKey = "F";
 	}
 }
 
@@ -503,30 +507,31 @@ nuxsr.msg = function(str) {
    ===================================================== */
 nuxsr.init = function() {
 	var that = this;
+
 	mw.loader.using( "ext.gadget.lib-toolbar", function() {
 		toolbarGadget.addButton( {
 			title: 'Wyszukiwanie i zamiana (wer. ' + that.version + ')',
 			alt: 'Szuk.',
-			id: 'SearchIcon',
+			id: 'srSearchIcon',
 			oldIcon: '//upload.wikimedia.org/wikipedia/commons/1/12/Button_find.png',
 			newIcon: '//commons.wikimedia.org/w/thumb.php?f=Crystal_Clear_action_viewmag.png&w=21',
 			onclick: function() {
 				that.showHide();
 			},
-			oncreate: function( button ) {
-				that.searchIcon = button;
-				that.searchIcon.accessKey = "F";
-			}
+			oncreate: function(button) {
+				that.searchButton = button;
+				that.searchButton.accessKey = "F";
+			},
 		} );
 		toolbarGadget.addButton( {
 			title: 'Zmiana wielkości liter',
 			alt: 'Wlk. lit.',
-			id: 'SearchIcon',
+			id: 'srCaseIcon',
 			oldIcon: '//upload.wikimedia.org/wikipedia/commons/1/12/Button_case.png',
 			newIcon: '//commons.wikimedia.org/w/thumb.php?f=Wynn.svg&w=23',
 			onclick: function() {
 				that.toggleCase();
-			}
+			},
 		} );
 	} );
 
