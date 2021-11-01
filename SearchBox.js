@@ -31,7 +31,7 @@ mw.messages.set( {
  */
 window.nuxsr = {
 	/** Version of the gadget */
-	version: '2.5.0'
+	version: '2.5.1'
 };
 
 
