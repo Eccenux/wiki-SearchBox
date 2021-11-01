@@ -1,38 +1,43 @@
-/*
-Instrukcja obsługi:
-http://pl.wikipedia.org/wiki/Wikipedia:Narz%C4%99dzia/Wyszukiwanie_i_zamiana
+/**
+	Instrukcja obsługi:
+	http://pl.wikipedia.org/wiki/Wikipedia:Narz%C4%99dzia/Wyszukiwanie_i_zamiana
 
-Autorzy:
-[[:en:User:Zocky]], Maciej Jaros [[:pl:User:Nux]]
-Wykorzystana wersja skryptu Zocky:
-http://en.wikipedia.org/w/index.php?title=User:Zocky/SearchBox.js&oldid=60000195
+	Autorzy:
+	[[:en:User:Zocky]], Maciej Jaros [[:pl:User:Nux]]
+	Wykorzystana wersja skryptu Zocky:
+	http://en.wikipedia.org/w/index.php?title=User:Zocky/SearchBox.js&oldid=60000195
 
-Dev version:
-http://pl.wikipedia.org/w/index.php?title=Wikipedysta:Nux/SearchBox.dev.js&action=edit
-User version:
-http://pl.wikipedia.org/w/index.php?title=MediaWiki:Gadget-searchbox.js&action=edit
-Github:
-https://github.com/Eccenux/wiki-SearchBox
+	Dev version:
+	http://pl.wikipedia.org/w/index.php?title=Wikipedysta:Nux/SearchBox.dev.js&action=edit
+	User version:
+	http://pl.wikipedia.org/w/index.php?title=MediaWiki:Gadget-searchbox.js&action=edit
+	Github:
+	https://github.com/Eccenux/wiki-SearchBox
 */
 /* eslint-disable array-bracket-newline */
 /* eslint-disable no-useless-escape */
 /* global mw, jQuery */
 /* global sel_t, toolbarGadget */
-/* global nuxsr */
 
 /* Translatable strings */
-mw.messages.set( {
-	'sbg-occurences-replaced': 'Zmieniono $1 wystąpień [$2] na [$3].',
-	'sbg-search-from-the-beginning': 'Wyszukiwanie od początku'
-} );
+mw.messages.set({
+	'nuxsr-occurences-replaced': 'Zmieniono $1 wystąpień [$2] na [$3].',
+	'nuxsr-search-from-the-beginning': 'Wyszukiwanie od początku',
+	'nuxsr-search-title': 'Wyszukiwanie i zamiana (wer. $1)',
+	'nuxsr-search-alt': 'Szuk.',
+	'nuxsr-case-title': 'Zmiana wielkości liter',
+	'nuxsr-case-alt': 'Wlk. lit.',
+});
 
 /**
- * Search box for Mediawiki code editor.
+ * Search and replace for MW code editor.
  */
-window.nuxsr = {
-	/** Version of the gadget */
-	version: '2.5.2'
-};
+function Nuxsr() {
+	/** @type {String} App version */
+	this.version = '2.5.3';
+}
+var nuxsr = new Nuxsr();
+window.nuxsr = nuxsr;
 
 
 /**
@@ -71,7 +76,7 @@ nuxsr.boxHtml = function(options) {
 		+'</div>'
 		+'<div style="clear:both;padding-top:3px;">'
 			+'<span>'
-				+'<a href="javascript:nuxsr.mem.remind()" style="background:inherit" tabindex="'+(ti+10)+'">MR</a>'
+				+'<a href="javascript:nuxsr.mem.remind()" style="background:inherit" tabindex="'+(ti+10)+'" title="Przypomnij (wstaw w pola) zapisane sekwencje.">MR</a>'
 			+'</span>'
 			+' &nbsp; '
 			+'<span>'
@@ -230,7 +235,7 @@ nuxsr.next = function (norev)
 	var res = re.exec (nuxsr.t.value);
 	if (!res && !norev)
 	{
-		nuxsr.msg(mw.msg('sbg-search-from-the-beginning'));
+		nuxsr.msg(mw.msg('nuxsr-search-from-the-beginning'));
 		re.lastIndex=0;
 		res = re.exec (nuxsr.t.value);
 	}
@@ -325,7 +330,7 @@ nuxsr.replaceAll = function ()
 	// show num of ocurrences
 	if (matchesArr)
 	{
-		nuxsr.msg( mw.msg('sbg-occurences-replaced', matchesArr.length, nuxsr.s.value, nuxsr.r.value));
+		nuxsr.msg(mw.msg('nuxsr-occurences-replaced', matchesArr.length, nuxsr.s.value, nuxsr.r.value));
 	}
 
 	return;
@@ -560,8 +565,8 @@ nuxsr.init = function() {
 
 	mw.loader.using( "ext.gadget.lib-toolbar", function() {
 		toolbarGadget.addButton( {
-			title: 'Wyszukiwanie i zamiana (wer. ' + that.version + ')',
-			alt: 'Szuk.',
+			title: mw.msg('nuxsr-search-title', that.version),
+			alt: mw.msg('nuxsr-search-alt'),
 			id: 'srSearchIcon',
 			oldIcon: '//upload.wikimedia.org/wikipedia/commons/1/12/Button_find.png',
 			newIcon: '//commons.wikimedia.org/w/thumb.php?f=Crystal_Clear_action_viewmag.png&w=21',
@@ -574,8 +579,8 @@ nuxsr.init = function() {
 			},
 		} );
 		toolbarGadget.addButton( {
-			title: 'Zmiana wielkości liter',
-			alt: 'Wlk. lit.',
+			title: mw.msg('nuxsr-case-title'),
+			alt: mw.msg('nuxsr-case-alt'),
 			id: 'srCaseIcon',
 			oldIcon: '//upload.wikimedia.org/wikipedia/commons/1/12/Button_case.png',
 			newIcon: '//commons.wikimedia.org/w/thumb.php?f=Wynn.svg&w=23',
