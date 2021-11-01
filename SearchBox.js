@@ -34,7 +34,7 @@ mw.messages.set({
  */
 function Nuxsr() {
 	/** @type {String} App version */
-	this.version = '2.5.3';
+	this.version = '2.5.4';
 }
 var nuxsr = new Nuxsr();
 window.nuxsr = nuxsr;
@@ -151,7 +151,6 @@ nuxsr.saveInputs = function () {
 		case:this.form.nuxsr_case.checked,
 		regexp:this.form.nuxsr_regexp.checked,
 	};
-	console.log('[nuxsr] saveInputs', data);
 	localStorage.setItem(this.storageKey, JSON.stringify(data));
 }
 /**
@@ -171,7 +170,6 @@ nuxsr.restoreInputs = function () {
 		return;
 	}
 	
-	console.log('[nuxsr] restoreInputs', data);
 	this.form.nuxsr_search.value = data.s;
 	this.form.nuxsr_replace.value = data.r;
 	this.form.nuxsr_case.checked = data.case;
