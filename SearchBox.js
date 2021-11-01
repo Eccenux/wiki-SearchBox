@@ -31,58 +31,71 @@ mw.messages.set( {
  */
 window.nuxsr = {
 	/** Version of the gadget */
-	version: '2.4.1dev'
+	version: '2.5.0'
 };
 
 
-
-//
-// search box code
-nuxsr.boxHTML =
-	'<form name="nuxsr_form"><div id="srBox" style="line-height: 1.5em;">'
+/**
+ * Render HTML for the form.
+ * @param {Object} options 
+ * 		{baseIndex:123} base index for tabindex.
+ * 		Make sure this doesn't collide with othe fields on the page.
+ * @returns search box code.
+ */
+nuxsr.boxHtml = function(options) {
+	var ti = 100;
+	if ('baseIndex' in options) {
+		ti = options.baseIndex;
+	}
+	return '<form name="nuxsr_form"><div id="srBox" style="line-height: 1.5em;">'
 		+'<div>'
 			+'<span style="float:left;padding-top:0px;">'
 				+'<span class="label">znajdź:</span><br />'
-				+'<input size="25" type="text" name="nuxsr_search" id="nuxsr_search" accesskey="F" tabindex="8" onkeypress="event.which == 13 && nuxsr.next()"; value="" />'
+				+'<input size="25" type="text" name="nuxsr_search" id="nuxsr_search" accesskey="F" tabindex="'+(ti+1)+'" onkeypress="event.which == 13 && nuxsr.next()"; value="" />'
 			+'</span>'
 			+'<span style="float:left;padding-top:0px;">'
 				+'<span class="label">zamień na:</span><br />'
-				+'<input size="25" type="text" name="nuxsr_replace" id="nuxsr_replace" accesskey="G" tabindex="9" onkeypress="event.which == 13 && nuxsr.next()"; value="" />'
+				+'<input size="25" type="text" name="nuxsr_replace" id="nuxsr_replace" accesskey="G" tabindex="'+(ti+2)+'" onkeypress="event.which == 13 && nuxsr.next()"; value="" />'
 			+'</span>'
 			+'<span>'
-				+'<label><input type="checkbox" name="nuxsr_case" onclick="nuxsr.t.focus()" tabindex="10" />uwzględnij wielkość liter</label>'
-				+'<label><input type="checkbox" name="nuxsr_regexp" onclick="nuxsr.t.focus()" tabindex="11" />użyj RegEx</label>'
+				+'<label><input type="checkbox" name="nuxsr_case" onclick="nuxsr.t.focus()" tabindex="'+(ti+3)+'" />uwzględnij wielkość liter</label>'
+				+'<label><input type="checkbox" name="nuxsr_regexp" onclick="nuxsr.t.focus()" tabindex="'+(ti+4)+'" />użyj RegEx</label>'
 				+'<br />'
-				+'<a href="javascript:nuxsr.back()" title="szukaj wstecz [alt-2]" accesskey="2">&lt;</a>&nbsp;'
-				+'<a href="javascript:nuxsr.next()" title="szukaj dalej [alt-3]" accesskey="3">szukaj&nbsp;&nbsp;&gt;</a> &nbsp; '
-				+'<a href="javascript:nuxsr.replace();nuxsr.back()" title="zamień znalezione i szukaj poprzedniego [alt-4]" accesskey="4">&lt;</a>&nbsp;'
-				+'<a href="javascript:nuxsr.replace()" title="zamień znalezione">zamień</a>&nbsp;'
-				+'<a href="javascript:nuxsr.replace();nuxsr.next()" title="zamień znalezione i szukaj następnego [alt-5]" accesskey="5">&gt;</a> &nbsp; '
-				+'<a href="javascript:nuxsr.replaceAll()" title="zamień wszystkie wystąpienia, które zostaną znalezione [alt-7]" accesskey="7">zamień&nbsp;wszystkie</a> &nbsp; '
+				+'<a href="javascript:nuxsr.back()" title="szukaj wstecz [alt-2]" accesskey="2" tabindex="'+(ti+5)+'">&lt;</a>&nbsp;'
+				+'<a href="javascript:nuxsr.next()" title="szukaj dalej [alt-3]" accesskey="3" tabindex="'+(ti+6)+'">szukaj&nbsp;&nbsp;&gt;</a> &nbsp; '
+				+'<a href="javascript:nuxsr.replace();nuxsr.back()" title="zamień znalezione i szukaj poprzedniego [alt-4]" accesskey="4" tabindex="'+(ti+7)+'">&lt;</a>&nbsp;'
+				+'<a href="javascript:nuxsr.replace()" title="zamień znalezione" tabindex="'+(ti+8)+'">zamień</a>&nbsp;'
+				+'<a href="javascript:nuxsr.replace();nuxsr.next()" title="zamień znalezione i szukaj następnego [alt-5]" accesskey="5" tabindex="'+(ti+8)+'">&gt;</a> &nbsp; '
+				+'<a href="javascript:nuxsr.replaceAll()" title="zamień wszystkie wystąpienia, które zostaną znalezione [alt-7]" accesskey="7" tabindex="'+(ti+9)+'">zamień&nbsp;wszystkie</a> &nbsp; '
 			+'</span>'
 		+'</div>'
 		+'<div style="clear:both;padding-top:3px;">'
 			+'<span>'
-				+'<a href="javascript:nuxsr.mem.remind()" style="background:inherit">MR</a>'
+				+'<a href="javascript:nuxsr.mem.remind()" style="background:inherit" tabindex="'+(ti+10)+'">MR</a>'
 			+'</span>'
 			+' &nbsp; '
 			+'<span>'
-				+'<a href="javascript:nuxsr.gotoLine()" style="background:inherit" title="Skok do wiersza o podanym numerze.">Do wiersza:</a>'
-				+' <input type="text" name="nuxsr_goto_line" tabindex="12" style="width:55px" />'
+				+'<a href="javascript:nuxsr.gotoLine()" style="background:inherit" title="Skok do wiersza o podanym numerze." tabindex="'+(ti+11)+'">Do wiersza:</a>'
+				+' <input type="text" name="nuxsr_goto_line" tabindex="'+(ti+12)+'" style="width:55px" />'
 			+'</span>'
 		+'</div>'
 		+'<div style="clear:both"></div>'
 	+'</div></form>'
-;
+};
 
 //
 // Variables set on page load
 //
-// nuxsr.t=document.editform.wpTextbox1;
-// nuxsr.form=document.nuxsr_form;
-// nuxsr.s=document.nuxsr_form.nuxsr.search;
-// nuxsr.r=document.nuxsr_form.nuxsr.replace;
-// nuxsr.srbox is a form container;
+/** @type {Element} A textarea to search in (probably wpTextbox1). */
+nuxsr.t = null;
+/** @type {Element} Gadget's main form (document.nuxsr_form). */
+nuxsr.form = null;
+/** @type {Element} document.nuxsr_form.nuxsr.search */
+nuxsr.s = null;
+/** @type {Element} document.nuxsr_form.nuxsr.replace */
+nuxsr.r = null;
+/** @type {Element} The form container. */
+nuxsr.srbox = null;
 
 /* =====================================================
 	Common replace/search functions
@@ -316,15 +329,14 @@ nuxsr.showHide = function() {
 		//
 		// inserting search box
 		var srbox = document.createElement( 'div' );
-		srbox.innerHTML = nuxsr.boxHTML;
+		srbox.innerHTML = nuxsr.boxHtml({baseIndex:100});
 		srbox.firstChild.style.display = 'none';
 
-		jQuery( this.t ).before( srbox );
+		jQuery(this.t).before(srbox);
 		this.srbox = srbox;
 		this.form = document.nuxsr_form;
 		this.s = document.nuxsr_form.nuxsr_search;
 		this.r = document.nuxsr_form.nuxsr_replace;
-
 	}
 
 	//
