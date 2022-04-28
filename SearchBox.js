@@ -34,7 +34,7 @@ mw.messages.set({
  */
 function Nuxsr() {
 	/** @type {String} App version */
-	this.version = '2.5.4';
+	this.version = '2.5.5';
 }
 var nuxsr = new Nuxsr();
 window.nuxsr = nuxsr;
@@ -383,7 +383,12 @@ nuxsr.showHide = function() {
 		srbox.innerHTML = nuxsr.boxHtml({baseIndex:100});
 		srbox.firstChild.style.display = 'none';
 
-		jQuery(this.t).before(srbox);
+		var topEditor = document.querySelector('.wikiEditor-ui-top');
+		if (topEditor instanceof Element) {
+			topEditor.appendChild(srbox);
+		} else {
+			jQuery(this.t).before(srbox);
+		}
 		this.srbox = srbox;
 		this.form = document.nuxsr_form;
 		this.s = document.nuxsr_form.nuxsr_search;
@@ -409,8 +414,8 @@ nuxsr.showHide = function() {
 		el.style.boxSizing = 'border-box'
 		el.style.borderTop = '1px solid silver';
 		el.readOnly = true;
-		jQuery('.wikiEditor-ui-text').after(el);
 		nuxsr.messages = el;
+		jQuery('.wikiEditor-ui').after(nuxsr.messages);
 	}
 
 	// fix access key
