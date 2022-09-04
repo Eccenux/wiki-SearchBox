@@ -34,7 +34,7 @@ mw.messages.set({
  */
 function Nuxsr() {
 	/** @type {String} App version */
-	this.version = '2.5.5';
+	this.version = '2.6.0';
 }
 var nuxsr = new Nuxsr();
 window.nuxsr = nuxsr;
@@ -376,7 +376,9 @@ nuxsr.sync = function ()
    ===================================================== */
 nuxsr.showHide = function() {
 
+	var create = false;	// first time?
 	if ( !this.form ) {
+		create = true;
 		//
 		// inserting search box
 		var srbox = document.createElement( 'div' );
@@ -418,7 +420,8 @@ nuxsr.showHide = function() {
 		jQuery('.wikiEditor-ui').after(nuxsr.messages);
 	}
 
-	// fix access key
+	// setup show/hide and fix access key
+	var hidding = false;
 	if ( nuxsr.form.style.display == 'none' ) {
 		if (nuxsr.messages.value.length) {
 			nuxsr.messages.style.display = 'block';
@@ -428,9 +431,21 @@ nuxsr.showHide = function() {
 		nuxsr.s.focus();
 
 	} else {
+		hidding = true;
 		nuxsr.messages.style.display = 'none';
 		nuxsr.form.style.display = 'none';
 		nuxsr.searchButton.accessKey = "F";
+	}
+
+	// usage: mw.hook('userjs.SearchBox.showHide').add(function (sr, hidding) {});
+	mw.hook('userjs.SearchBox.showHide').fire(nuxsr, hidding);
+	// each time when shown
+	if (!hidding) {
+		mw.hook('userjs.SearchBox.show').fire(nuxsr);
+	}
+	// first time shown (form created)
+	if (create) {
+		mw.hook('userjs.SearchBox.create').fire(nuxsr);
 	}
 }
 
