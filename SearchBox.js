@@ -34,7 +34,7 @@ mw.messages.set({
  */
 function Nuxsr() {
 	/** @type {String} App version */
-	this.version = '2.6.0';
+	this.version = '2.6.1';
 }
 var nuxsr = new Nuxsr();
 window.nuxsr = nuxsr;
@@ -579,21 +579,21 @@ nuxsr.msg = function(str) {
 	Init buttons
    ===================================================== */
 nuxsr.init = function() {
-	var that = this;
+	var me = this;
 
 	mw.loader.using( "ext.gadget.lib-toolbar", function() {
 		toolbarGadget.addButton( {
-			title: mw.msg('nuxsr-search-title', that.version),
+			title: mw.msg('nuxsr-search-title', me.version),
 			alt: mw.msg('nuxsr-search-alt'),
 			id: 'srSearchIcon',
 			oldIcon: '//upload.wikimedia.org/wikipedia/commons/1/12/Button_find.png',
 			newIcon: '//commons.wikimedia.org/w/thumb.php?f=Crystal_Clear_action_viewmag.png&w=21',
 			onclick: function() {
-				that.showHide();
+				me.showHide();
 			},
 			oncreate: function(button) {
-				that.searchButton = button;
-				that.searchButton.accessKey = "F";
+				me.searchButton = button;
+				me.searchButton.accessKey = "F";
 			},
 		} );
 		toolbarGadget.addButton( {
@@ -603,16 +603,19 @@ nuxsr.init = function() {
 			oldIcon: '//upload.wikimedia.org/wikipedia/commons/1/12/Button_case.png',
 			newIcon: '//commons.wikimedia.org/w/thumb.php?f=Wynn.svg&w=23',
 			onclick: function() {
-				that.toggleCase();
+				me.toggleCase();
 			},
 		} );
 	} );
 
 	jQuery( document ).ready( function() {
 		if (typeof document.editform !== 'undefined') {
-			that.t = document.editform.wpTextbox1;
+			me.t = document.editform.wpTextbox1;
 		}
 	} );
+
+	// usage: mw.hook('userjs.SearchBox.init').add(function (sr) {});
+	mw.hook('userjs.SearchBox.init').fire(this);
 }
 
 /* =====================================================
