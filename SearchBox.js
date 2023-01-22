@@ -1,16 +1,16 @@
 /**
 	Instrukcja obsługi:
-	http://pl.wikipedia.org/wiki/Wikipedia:Narz%C4%99dzia/Wyszukiwanie_i_zamiana
+	https://pl.wikipedia.org/wiki/Wikipedia:Narz%C4%99dzia/Wyszukiwanie_i_zamiana
 
 	Autorzy:
 	[[:en:User:Zocky]], Maciej Jaros [[:pl:User:Nux]]
 	Wykorzystana wersja skryptu Zocky:
-	http://en.wikipedia.org/w/index.php?title=User:Zocky/SearchBox.js&oldid=60000195
+	https://en.wikipedia.org/w/index.php?title=User:Zocky/SearchBox.js&oldid=60000195
 
 	Dev version:
-	http://pl.wikipedia.org/w/index.php?title=Wikipedysta:Nux/SearchBox.dev.js&action=edit
+	https://pl.wikipedia.org/w/index.php?title=Wikipedysta:Nux/SearchBox.dev.js&action=edit
 	User version:
-	http://pl.wikipedia.org/w/index.php?title=MediaWiki:Gadget-searchbox.js&action=edit
+	https://pl.wikipedia.org/w/index.php?title=MediaWiki:Gadget-searchbox.js&action=edit
 	Github:
 	https://github.com/Eccenux/wiki-SearchBox
 */
@@ -34,7 +34,7 @@ mw.messages.set({
  */
 function Nuxsr() {
 	/** @type {String} App version */
-	this.version = '2.7.0';
+	this.version = '2.7.1';
 }
 var nuxsr = new Nuxsr();
 window.nuxsr = nuxsr;
@@ -611,8 +611,13 @@ nuxsr.addButtons = function(toolbarGadget) {
 
 	// load dep if not ready yet
 	if (typeof sel_t == 'undefined') {
-		console.log('[nuxsr]', 'sel_t not defined, will attempt to load from pl.wiki');
-		mw.loader.load("https://pl.wikipedia.org/w/index.php?action=raw&ctype=text/javascript&title=MediaWiki:Gadget-sel_t.js");
+		console.log('[nuxsr]', 'sel_t not defined, will attempt to load the library from local gadgets');
+		mw.loader.using("ext.gadget.lib-sel_t", function() {
+			me.addButtons(toolbarGadget)
+		}, function() {
+			console.log('[nuxsr]', 'sel_t not defined, will attempt to load from pl.wiki');
+			mw.loader.load("https://pl.wikipedia.org/w/index.php?action=raw&ctype=text/javascript&title=MediaWiki:Gadget-sel_t.js");
+		});
 	}
 }
 nuxsr.init = function() {
