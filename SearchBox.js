@@ -34,7 +34,7 @@ mw.messages.set({
  */
 function Nuxsr() {
 	/** @type {String} App version */
-	this.version = '2.6.1';
+	this.version = '2.7.0';
 }
 var nuxsr = new Nuxsr();
 window.nuxsr = nuxsr;
@@ -164,7 +164,7 @@ nuxsr.restoreInputs = function () {
 	try {
 		var data = JSON.parse(raw);
 	} catch (error) {
-		console.error('[nuxsr] restoreInputs; error parsing object:', raw);
+		console.error('[nuxsr]', 'restoreInputs; error parsing object:', raw);
 	}
 	if (typeof data !== 'object') {
 		return;
@@ -578,10 +578,9 @@ nuxsr.msg = function(str) {
 /* =====================================================
 	Init buttons
    ===================================================== */
-nuxsr.init = function() {
+nuxsr.addButtons = function(toolbarGadget) {
 	var me = this;
-
-	mw.loader.using( "ext.gadget.lib-toolbar", function() {
+	if (toolbarGadget) {
 		toolbarGadget.addButton( {
 			title: mw.msg('nuxsr-search-title', me.version),
 			alt: mw.msg('nuxsr-search-alt'),
@@ -606,9 +605,33 @@ nuxsr.init = function() {
 				me.toggleCase();
 			},
 		} );
+	} else {
+		console.error('[nuxsr]', 'toolbarGadget is not defined');
+	}
+
+	// load dep if not ready yet
+	if (typeof sel_t == 'undefined') {
+		console.log('[nuxsr]', 'sel_t not defined, will attempt to load from pl.wiki');
+		mw.loader.load("https://pl.wikipedia.org/w/index.php?action=raw&ctype=text/javascript&title=MediaWiki:Gadget-sel_t.js");
+	}
+}
+nuxsr.init = function() {
+	var me = this;
+
+	// buttons / toolbar
+	mw.loader.using( "ext.gadget.lib-toolbar", function() {
+		me.addButtons(toolbarGadget)
+	}, function() {
+		console.log('[nuxsr]', 'failed to load local ext.gadget.lib-toolbar, will attempt to load from pl.wiki', arguments);
+		// fallback for wikis without gadget.lib-toolbar
+		mw.loader.load("https://pl.wikipedia.org/w/index.php?action=raw&ctype=text/javascript&title=MediaWiki:Gadget-lib-toolbar.js");
+		mw.hook('toolbarGadget.ready').add(function() {
+			me.addButtons(toolbarGadget);
+		});
 	} );
 
 	jQuery( document ).ready( function() {
+		// main textarea
 		if (typeof document.editform !== 'undefined') {
 			me.t = document.editform.wpTextbox1;
 		}
