@@ -34,7 +34,7 @@ mw.messages.set({
  */
 function Nuxsr() {
 	/** @type {String} App version */
-	this.version = '2.7.1';
+	this.version = '2.7.2';
 }
 var nuxsr = new Nuxsr();
 window.nuxsr = nuxsr;
@@ -580,7 +580,10 @@ nuxsr.msg = function(str) {
    ===================================================== */
 nuxsr.addButtons = function(toolbarGadget) {
 	var me = this;
-	if (toolbarGadget) {
+
+	if (!this._buttonsAlreadyDone && toolbarGadget) {
+		this._buttonsAlreadyDone = true;
+
 		toolbarGadget.addButton( {
 			title: mw.msg('nuxsr-search-title', me.version),
 			alt: mw.msg('nuxsr-search-alt'),
@@ -605,7 +608,8 @@ nuxsr.addButtons = function(toolbarGadget) {
 				me.toggleCase();
 			},
 		} );
-	} else {
+	}
+	if (!toolbarGadget) {
 		console.error('[nuxsr]', 'toolbarGadget is not defined');
 	}
 
