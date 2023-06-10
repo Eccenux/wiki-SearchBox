@@ -34,7 +34,7 @@ mw.messages.set({
  */
 function Nuxsr() {
 	/** @type {String} App version */
-	this.version = '2.7.3';
+	this.version = '2.7.4';
 }
 var nuxsr = new Nuxsr();
 window.nuxsr = nuxsr;
@@ -501,11 +501,11 @@ nuxsr.mem = {
 		// nie powinno łapać: class="wikitable sortable"
 		// nie powinno łapać: |align="center"|abc "def"
 		// powinno łapać: "a"
-		'([^=])"([^|\n"][^"\n]*?[^=|]|[^"])"([^>|])'
+		'([^=])"([^|"\\]})> \\n\\t.,?;][^"]*?[^=| \\n\\t]|[^"|{}\\[\\]]{1,3})"([^>|])',
 	],
 	r : [
 		' – ',
-		'$1„$2”$3'
+		'$1„$2”$3',
 	]
 };
 nuxsr.mem.index = -1;
