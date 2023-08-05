@@ -593,8 +593,8 @@ nuxsr.addButtons = function(toolbarGadget) {
 			title: mw.msg('nuxsr-search-title', me.version),
 			alt: mw.msg('nuxsr-search-alt'),
 			id: 'srSearchIcon',
-			oldIcon: '//upload.wikimedia.org/wikipedia/commons/1/12/Button_find.png',
-			newIcon: '//commons.wikimedia.org/w/thumb.php?f=Crystal_Clear_action_viewmag.png&w=21',
+			oldIcon: 'https://upload.wikimedia.org/wikipedia/commons/1/12/Button_find.png',
+			newIcon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/Crystal_Clear_action_viewmag.png/21px-Crystal_Clear_action_viewmag.png',
 			onclick: function() {
 				me.showHide();
 			},
@@ -607,8 +607,8 @@ nuxsr.addButtons = function(toolbarGadget) {
 			title: mw.msg('nuxsr-case-title'),
 			alt: mw.msg('nuxsr-case-alt'),
 			id: 'srCaseIcon',
-			oldIcon: '//upload.wikimedia.org/wikipedia/commons/1/12/Button_case.png',
-			newIcon: '//commons.wikimedia.org/w/thumb.php?f=Wynn.svg&w=23',
+			oldIcon: 'https://upload.wikimedia.org/wikipedia/commons/1/12/Button_case.png',
+			newIcon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Wynn.svg/23px-Wynn.svg.png',
 			onclick: function() {
 				me.toggleCase();
 			},

@@ -1,5 +1,5 @@
-let version = '2.8.0';
-let info = 'Auto-deployment';
+let version = '2.8.1';
+let info = '[[phab:T211661]] thumbs.php bad for cache';
 export {
 	version,
 	info,
