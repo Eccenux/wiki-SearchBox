@@ -20,8 +20,7 @@ ployBot.summary = () => {
 	// deploy
 	const configs = [];
 	configs.push(new DeployConfig({
-		src: 'SearchBox.js',
-		dst: '~/SearchBox.dev.js',
+		src: 'SearchBox.dev.js',
 	}));
 	configs.push(new DeployConfig({
 		src: 'SearchBox.css',
