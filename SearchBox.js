@@ -1,17 +1,19 @@
 /**
-	Instrukcja obsługi:
+	SearchBox – wikitext search and replacement with RegExp support.
+	v{version}
+
+	Instrukcja obsługi (pl):
 	https://pl.wikipedia.org/wiki/Wikipedia:Narz%C4%99dzia/Wyszukiwanie_i_zamiana
 
-	Autorzy:
+	Authors:
 	[[:en:User:Zocky]], Maciej Jaros [[:pl:User:Nux]]
-	Wykorzystana wersja skryptu Zocky:
+	Forked version by Zocky (2006-06-22):
 	https://en.wikipedia.org/w/index.php?title=User:Zocky/SearchBox.js&oldid=60000195
 
-	Dev version:
-	https://pl.wikipedia.org/w/index.php?title=Wikipedysta:Nux/SearchBox.dev.js&action=edit
-	User version:
-	https://pl.wikipedia.org/w/index.php?title=MediaWiki:Gadget-searchbox.js&action=edit
-	Github:
+	Dev version:  [[:pl:User:Nux/SearchBox.dev.js]]
+	User version: [[:pl:MediaWiki:Gadget-searchbox.js]]
+
+	Repo, bugz, pull requests:
 	https://github.com/Eccenux/wiki-SearchBox
 */
 /* eslint-disable array-bracket-newline */
@@ -34,7 +36,7 @@ mw.messages.set({
  */
 function Nuxsr() {
 	/** @type {String} App version */
-	this.version = '2.7.4';
+	this.version = '{version}';
 }
 var nuxsr = new Nuxsr();
 window.nuxsr = nuxsr;

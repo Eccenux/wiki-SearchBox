@@ -17,5 +17,15 @@ module.exports = {
 		"array-bracket-newline": ["error", { "multiline": true, "minItems": 3 }],
 		//"array-element-newline": ["error", { "multiline": true }]
 		"array-element-newline": ["error", "consistent"]
-	}
+	},
+	"overrides": [{
+		"files": ["**/*.mjs"],
+		"env": {
+			"node": true,
+		},
+		"parserOptions": {
+			"ecmaVersion": 11,
+			"sourceType": "module"
+		},
+	}],
 };
