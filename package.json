@@ -2,9 +2,7 @@
 	"name": "wiki-searchbox",
 	"type": "commonjs",
 	"devDependencies": {
-		"eslint": "8.x"
-	},
-	"dependencies": {
-		"wikiploy": "1.x"
+		"eslint": "8.x",
+		"wikiploy": "2.x"
 	}
 }
