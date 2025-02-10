@@ -6,7 +6,7 @@
 	https://pl.wikipedia.org/wiki/Wikipedia:Narz%C4%99dzia/Wyszukiwanie_i_zamiana
 
 	Authors:
-	[[:en:User:Zocky]], Maciej Jaros [[:pl:User:Nux]]
+	[[:en:User:Zocky]], Maciej Jaros [[:pl:User:Nux]], [[:pl:User:Msz2001]]
 	Forked version by Zocky (2006-06-22):
 	https://en.wikipedia.org/w/index.php?title=User:Zocky/SearchBox.js&oldid=60000195
 
