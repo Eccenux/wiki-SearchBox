@@ -7,48 +7,24 @@
 
 #srBox
 {
-	background:#EEE;
-	border:solid 1px silver;
-	padding:0.2em;
-	margin:0;
+	background: var(--background-color-interactive, #eaecf0);
+	border: 1px solid var(--border-color-base, #a2a9b1);
+	padding: 0.2em;
+	margin: 0;
 }
 
 #srBox input[type="text"]
 {
-	background:#FFF;
-	border:solid 1px silver;
 	margin:0 1em 0 0;
 }
 
 #srBox .label, #srBox label
 {
 	vertical-align: top;
-	color:#000;
 	font-size: 80%;
 }
-#srBox label input
-{
-	vertical-align: top;
-}
 
-#srBox a
+#srBox button
 {
-	background:#ccf;
-	border:solid 1px silver;
-	padding:1px 0.3em;
 	font-size:90%;
-	color:#333;
-	text-decoration:none;
-}
-
-#srBox a:hover
-{
-	background:#99f;
-	color:#fff;
-}
-
-#srBox a:focus
-{
-	background:#fff;
-	color:#33C;
 }

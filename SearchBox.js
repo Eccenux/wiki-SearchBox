@@ -44,46 +44,39 @@ window.nuxsr = nuxsr;
 
 /**
  * Render HTML for the form.
- * @param {Object} options 
- * 		{baseIndex:123} base index for tabindex.
- * 		Make sure this doesn't collide with othe fields on the page.
  * @returns search box code.
  */
-nuxsr.boxHtml = function(options) {
-	var ti = 100;
-	if ('baseIndex' in options) {
-		ti = options.baseIndex;
-	}
+nuxsr.boxHtml = function() {
 	return '<form name="nuxsr_form"><div id="srBox" style="line-height: 1.5em;">'
 		+'<div>'
 			+'<span style="float:left;padding-top:0px;">'
 				+'<span class="label">znajdź:</span><br />'
-				+'<input size="25" type="text" name="nuxsr_search" id="nuxsr_search" title="[alt+shift+F]" accesskey="F" tabindex="'+(ti+1)+'" onkeypress="event.which == 13 && nuxsr.next()"; value="" />'
+				+'<input size="25" type="text" name="nuxsr_search" id="nuxsr_search" title="[alt+shift+F]" accesskey="F" onkeypress="event.which == 13 && nuxsr.next()"; value="" />'
 			+'</span>'
 			+'<span style="float:left;padding-top:0px;">'
 				+'<span class="label">zamień na:</span><br />'
-				+'<input size="25" type="text" name="nuxsr_replace" id="nuxsr_replace" accesskey="G" tabindex="'+(ti+2)+'" onkeypress="event.which == 13 && nuxsr.next()"; value="" />'
+				+'<input size="25" type="text" name="nuxsr_replace" id="nuxsr_replace" accesskey="G" onkeypress="event.which == 13 && nuxsr.next()"; value="" />'
 			+'</span>'
 			+'<span>'
-				+'<label><input type="checkbox" name="nuxsr_case" onclick="nuxsr.t.focus()" tabindex="'+(ti+3)+'" />uwzględnij wielkość liter</label>'
-				+'<label><input type="checkbox" name="nuxsr_regexp" onclick="nuxsr.t.focus()" tabindex="'+(ti+4)+'" />użyj RegEx</label>'
+				+'<label><input type="checkbox" name="nuxsr_case" onclick="nuxsr.t.focus()" />uwzględnij wielkość liter</label>'
+				+'<label><input type="checkbox" name="nuxsr_regexp" onclick="nuxsr.t.focus()" />użyj RegEx</label>'
 				+'<br />'
-				+'<a href="javascript:nuxsr.back()" title="szukaj wstecz [alt+shift+2]" accesskey="2" tabindex="'+(ti+5)+'">&lt;</a>&nbsp;'
-				+'<a href="javascript:nuxsr.next()" title="szukaj dalej [alt+shift+3]" accesskey="3" tabindex="'+(ti+6)+'">szukaj&nbsp;&nbsp;&gt;</a> &nbsp; '
-				+'<a href="javascript:nuxsr.replace();nuxsr.back()" title="zamień znalezione i szukaj poprzedniego [alt+shift+4]" accesskey="4" tabindex="'+(ti+7)+'">&lt;</a>&nbsp;'
-				+'<a href="javascript:nuxsr.replace()" title="zamień znalezione" tabindex="'+(ti+8)+'">zamień</a>&nbsp;'
-				+'<a href="javascript:nuxsr.replace();nuxsr.next()" title="zamień znalezione i szukaj następnego [alt+shift+5]" accesskey="5" tabindex="'+(ti+8)+'">&gt;</a> &nbsp; '
-				+'<a href="javascript:nuxsr.replaceAll()" title="zamień wszystkie wystąpienia, które zostaną znalezione [alt+shift+7]" accesskey="7" tabindex="'+(ti+9)+'">zamień&nbsp;wszystkie</a> &nbsp; '
+				+'<button type="button" onclick="nuxsr.back()" title="szukaj wstecz [alt+shift+2]" accesskey="2">&lt;</button>&nbsp;'
+				+'<button type="button" onclick="nuxsr.next()" title="szukaj dalej [alt+shift+3]" accesskey="3">szukaj&nbsp;&nbsp;&gt;</button> &nbsp; '
+				+'<button type="button" onclick="nuxsr.replace();nuxsr.back()" title="zamień znalezione i szukaj poprzedniego [alt+shift+4]" accesskey="4">&lt;</button>&nbsp;'
+				+'<button type="button" onclick="nuxsr.replace()" title="zamień znalezione">zamień</button>&nbsp;'
+				+'<button type="button" onclick="nuxsr.replace();nuxsr.next()" title="zamień znalezione i szukaj następnego [alt+shift+5]" accesskey="5">&gt;</button> &nbsp; '
+				+'<button type="button" onclick="nuxsr.replaceAll()" title="zamień wszystkie wystąpienia, które zostaną znalezione [alt+shift+7]" accesskey="7">zamień&nbsp;wszystkie</button> &nbsp; '
 			+'</span>'
 		+'</div>'
 		+'<div style="clear:both;padding-top:3px;">'
 			+'<span>'
-				+'<a href="javascript:nuxsr.mem.remind()" style="background:inherit" tabindex="'+(ti+10)+'" title="Przypomnij (wstaw w pola) zapisane sekwencje.">MR</a>'
+				+'<button type="button" onclick="nuxsr.mem.remind()" title="Przypomnij (wstaw w pola) zapisane sekwencje.">MR</button>'
 			+'</span>'
 			+' &nbsp; '
 			+'<span>'
-				+'<a href="javascript:nuxsr.gotoLine()" style="background:inherit" title="Skok do wiersza o podanym numerze." tabindex="'+(ti+11)+'">Do wiersza:</a>'
-				+' <input type="text" name="nuxsr_goto_line" tabindex="'+(ti+12)+'" style="width:55px" />'
+				+'<button type="button" onclick="nuxsr.gotoLine()" title="Skok do wiersza o podanym numerze." >Do wiersza:</button>'
+				+' <input type="text" name="nuxsr_goto_line" style="width:55px" />'
 			+'</span>'
 		+'</div>'
 		+'<div style="clear:both"></div>'
@@ -384,7 +377,7 @@ nuxsr.showHide = function() {
 		//
 		// inserting search box
 		var srbox = document.createElement( 'div' );
-		srbox.innerHTML = nuxsr.boxHtml({baseIndex:100});
+		srbox.innerHTML = nuxsr.boxHtml();
 		srbox.firstChild.style.display = 'none';
 
 		var topEditor = document.querySelector('.wikiEditor-ui-top');
