@@ -75,7 +75,7 @@ nuxsr.boxHtml = function() {
 			+'</span>'
 			+' &nbsp; '
 			+'<span>'
-				+'<button type="button" onclick="nuxsr.gotoLine()" title="Skok do wiersza o podanym numerze." >Do wiersza:</button>'
+				+'<button type="button" onclick="nuxsr.gotoLine()" title="Skok do wiersza o podanym numerze.">Do wiersza:</button>'
 				+' <input type="text" name="nuxsr_goto_line" style="width:55px" />'
 			+'</span>'
 		+'</div>'
@@ -605,6 +605,7 @@ nuxsr.addButtons = function(toolbarGadget) {
 			onclick: function() {
 				me.toggleCase();
 			},
+			add_class: 'skin-invert',
 		} );
 	}
 	if (!toolbarGadget) {
