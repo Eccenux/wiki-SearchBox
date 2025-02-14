@@ -27,6 +27,13 @@ ployBot.summary = () => {
 		src: 'SearchBox.css',
 		dst: 'MediaWiki:Gadget-searchbox.css',
 	}));
+	// +dev
+	configs.push(new DeployConfig({
+		src: 'SearchBox.dev.js',
+	}));
+	configs.push(new DeployConfig({
+		src: 'SearchBox.css',
+	}));
 	await ployBot.deploy(configs);
 })().catch(err => {
 	console.error(err);
