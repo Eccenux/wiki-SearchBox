@@ -496,7 +496,7 @@ nuxsr.mem = {
 		// nie powinno łapać: class="wikitable sortable"
 		// nie powinno łapać: |align="center"|abc "def"
 		// powinno łapać: "a"
-		'([^=])"([^|"\\]})> \\n\\t.,?;][^"]*?[^=| \\n\\t]|[^"|{}\\[\\]]{1,3})"([^>|])',
+		'([^=0-9])"([^|"\\]})> \\n\\t.,?;][^"]*?[^=| \\n\\t]|[^"|{}\\[\\]]{1,3})"([^>|])',
 	],
 	r : [
 		' – ',
