@@ -1,5 +1,5 @@
-let version = '3.0.2';
-let info = `poprawka dla cudzysłowów w lokalizacji: 49°26'12"N 20°09'34"E`;
+let version = '3.1.0';
+let info = `M+/-`;
 export {
 	version,
 	info,

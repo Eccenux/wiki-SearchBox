@@ -29,6 +29,7 @@ mw.messages.set({
 	'nuxsr-search-alt': 'Szuk.',
 	'nuxsr-case-title': 'Zmiana wielkości liter',
 	'nuxsr-case-alt': 'Wlk. lit.',
+	'nuxsr-mem-clear-message': 'Masz $1 wyszukiwań w pamięci. Potwierdź czy chcesz je skasować i wgrać $2 domyślnych.',
 });
 
 /**
@@ -72,6 +73,9 @@ nuxsr.boxHtml = function() {
 		+'<div style="clear:both;padding-top:3px;">'
 			+'<span>'
 				+'<button type="button" onclick="nuxsr.mem.remind()" title="Przypomnij (wstaw w pola) zapisane sekwencje.">MR</button>'
+				+' <button type="button" onclick="nuxsr.mem.memPlus()" title="Dodaj bieżące wyszukiwanie do zapisanych.">M+</button>'
+				+' <button type="button" onclick="nuxsr.mem.memMinus()" title="Usuń bieżące z zapisanych (jeśli zapisane).">M-</button>'
+				+' <button type="button" onclick="nuxsr.mem.memClear()" title="Resetuj zmiany (z potwierdzeniem).">MC</button>'
 			+'</span>'
 			+' &nbsp; '
 			+'<span>'
@@ -511,6 +515,116 @@ nuxsr.mem.remind = function()
 	nuxsr.s.value = nuxsr.mem.s[nuxsr.mem.index];
 	nuxsr.r.value = nuxsr.mem.r[nuxsr.mem.index];
 }
+
+/** Init memory, probably after user setup. */
+nuxsr.mem.init = function()
+{
+	nuxsr.mem._srDefault = {
+		s: structuredClone(nuxsr.mem.s),
+		r: structuredClone(nuxsr.mem.r),
+	}
+	nuxsr.mem.loadUser();
+}
+
+/** Check if already there. */
+nuxsr.mem._indexOf = function(s, r)
+{
+	for (var i = 0; i < nuxsr.mem.s.length; i++) {
+		if (nuxsr.mem.s[i] == s 
+			&& nuxsr.mem.r[i] == r) {
+			return i;
+		}
+	}
+	return -1;
+}
+/** M+. */
+nuxsr.mem.memPlus = function()
+{
+	if (nuxsr.mem._indexOf(nuxsr.s.value, nuxsr.r.value) >= 0) {
+		console.log('[nuxsr] M+: item already there');
+		return;
+	}
+	var index = nuxsr.mem.s.length;
+	nuxsr.mem.s[index] = nuxsr.s.value;
+	nuxsr.mem.r[index] = nuxsr.r.value;
+	nuxsr.mem.saveUser();
+}
+/** M-. */
+nuxsr.mem.memMinus = function()
+{
+	var index = nuxsr.mem._indexOf(nuxsr.s.value, nuxsr.r.value);
+	if (index < 0) {
+		console.log('[nuxsr] M-: item missing');
+		return;
+	}
+	nuxsr.mem.s.splice(index, 1);
+	nuxsr.mem.r.splice(index, 1);
+	nuxsr.mem.saveUser();
+}
+/** MC(clear). */
+nuxsr.mem.memClear = function()
+{
+	var memDefault = nuxsr.mem._srDefault;
+	var msg = mw.msg('nuxsr-mem-clear-message', nuxsr.mem.s.length, memDefault.s.length);
+	msg += "\n\n";
+	for (var i = 0; i < nuxsr.mem.s.length; i++) {
+		var s = nuxsr.mem.s[i];
+		var r = nuxsr.mem.r[i];
+		msg += '\n{z:' + s + ',';
+		msg += '\ndo:' + r + '}';
+	}
+	if (confirm(msg)) {
+		nuxsr.mem.s = structuredClone(memDefault.s);
+		nuxsr.mem.r = structuredClone(memDefault.r);
+		nuxsr.mem._saveSr(null); // reset
+	}
+}
+nuxsr.mem._saveKey = 'userjs--nuxsr--mem'
+/** Save M+/- (is effectively async). */
+nuxsr.mem.saveUser = function()
+{
+	var sr = {
+		s: nuxsr.mem.s,
+		r: nuxsr.mem.r,
+	};
+	return nuxsr.mem._saveSr(sr);
+}
+nuxsr.mem._saveSr = function(sr)
+{
+	var api = new mw.Api();
+	var data = {};
+	data[nuxsr.mem._saveKey] = sr == null ? null : JSON.stringify(sr);
+	return api.saveOptions(data); // Promise-ish, can await
+}
+
+/** Load user data (no change on error/invalid). */
+nuxsr.mem.loadUser = function()
+{
+	var json = mw.user.options.get( nuxsr.mem._saveKey );
+	if (json == null) {
+		return;
+	}
+	console.log('[nuxsr] mem:', json);
+	var data = null;
+	try {
+		data = JSON.parse(json);
+	} catch (e) {
+		console.warn('[nuxsr] mem fail:', e);
+		return;
+	}
+	if (!(typeof (data) === 'object' 
+		&& Array.isArray(data.s) && Array.isArray(data.r)
+		&& data.s.length == data.r.length
+	)) {
+		console.warn('[nuxsr] restored mem is invalid:', data);
+		return;
+	}
+	console.log('[nuxsr] mem loaded:', data);
+	nuxsr.mem.s = data.s;
+	nuxsr.mem.r = data.r;
+}
+
+
 nuxsr.mass_rep_htmlspecialchars = {
 	s : ['&',		'>',		'<'],
 	r : ['&amp;',	'&gt;',		'&lt;']
@@ -627,6 +741,7 @@ nuxsr.init = function() {
 	var me = this;
 
 	// buttons / toolbar
+	mw.loader.load( [ 'mediawiki.api' ] ); // extra (for saving memory)
 	mw.loader.using( "ext.gadget.lib-toolbar", function() {
 		me.addButtons(toolbarGadget)
 	}, function() {
@@ -646,7 +761,9 @@ nuxsr.init = function() {
 	} );
 
 	// usage: mw.hook('userjs.SearchBox.init').add(function (sr) {});
-	mw.hook('userjs.SearchBox.init').fire(this);
+	mw.hook('userjs.SearchBox.init').fire(this); // designed for users to customize memory and such
+	// after users had the chance to add to memory
+	nuxsr.mem.init();
 }
 
 /* =====================================================
