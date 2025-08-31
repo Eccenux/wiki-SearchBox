@@ -31,6 +31,8 @@ mw.messages.set({
 	'nuxsr-case-title': 'Zmiana wielkości liter',
 	'nuxsr-case-alt': 'Wlk. lit.',
 	'nuxsr-mem-clear-message': 'Masz $1 wyszukiwania w pamięci. Potwierdź czy chcesz je skasować i wgrać $2 domyślne.',
+	'nuxsr-mem-clear-deleted-data': 'Skasowano wyszukiwania z pamięci.',
+	'nuxsr-mem-clear-input-cleared': 'Skasowano również bieżące wyszukiwanie:',
 });
 
 /**
@@ -604,10 +606,20 @@ nuxsr.mem.memClear = function()
 			nuxsr.mem.s = structuredClone(memDefault.s);
 			nuxsr.mem.r = structuredClone(memDefault.r);
 			nuxsr.mem._saveSr(null); // reset
+			let info = mw.msg('nuxsr-mem-clear-deleted-data');
 			// also clear quickcache
-			nuxsr.s.value = '';
-			nuxsr.r.value = '';
-			nuxsr.saveInputs();
+			let beforeS = nuxsr.s.value;
+			let beforeR = nuxsr.r.value;
+			if (beforeS.length || beforeR.length) {
+				nuxsr.s.value = '';
+				nuxsr.r.value = '';
+				nuxsr.saveInputs();
+				info += mw.msg('nuxsr-mem-clear-input-cleared')
+					+ '\n  z:' + beforeS
+					+ '\n do:' + beforeR
+				;
+			}
+			nuxsr.msg(info);
 		}
 	});
 }
