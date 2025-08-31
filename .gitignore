@@ -3,3 +3,4 @@
 temp.js
 bot.config.mjs
 SearchBox.dev.js
+*.priv.*

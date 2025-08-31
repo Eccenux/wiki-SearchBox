@@ -18,6 +18,7 @@
 */
 /* eslint-disable array-bracket-newline */
 /* eslint-disable no-useless-escape */
+/* global Promise */
 /* global mw, jQuery */
 /* global sel_t, toolbarGadget */
 
@@ -29,7 +30,7 @@ mw.messages.set({
 	'nuxsr-search-alt': 'Szuk.',
 	'nuxsr-case-title': 'Zmiana wielkości liter',
 	'nuxsr-case-alt': 'Wlk. lit.',
-	'nuxsr-mem-clear-message': 'Masz $1 wyszukiwań w pamięci. Potwierdź czy chcesz je skasować i wgrać $2 domyślnych.',
+	'nuxsr-mem-clear-message': 'Masz $1 wyszukiwania w pamięci. Potwierdź czy chcesz je skasować i wgrać $2 domyślne.',
 });
 
 /**
@@ -445,6 +446,9 @@ nuxsr.showHide = function() {
 	// first time shown (form created)
 	if (create) {
 		mw.hook('userjs.SearchBox.create').fire(nuxsr);
+
+		// after users had the chance to add to memory
+		nuxsr.mem.init();
 	}
 }
 
@@ -564,20 +568,48 @@ nuxsr.mem.memMinus = function()
 /** MC(clear). */
 nuxsr.mem.memClear = function()
 {
-	var memDefault = nuxsr.mem._srDefault;
-	var msg = mw.msg('nuxsr-mem-clear-message', nuxsr.mem.s.length, memDefault.s.length);
-	msg += "\n\n";
-	for (var i = 0; i < nuxsr.mem.s.length; i++) {
-		var s = nuxsr.mem.s[i];
-		var r = nuxsr.mem.r[i];
-		msg += '\n{z:' + s + ',';
-		msg += '\ndo:' + r + '}';
+	let memDefault = nuxsr.mem._srDefault;
+	// base message
+	let msg = mw.msg('nuxsr-mem-clear-message', nuxsr.mem.s.length, memDefault.s.length);
+	// element for building HTML safely
+	const container = document.createElement('div');
+	container.innerHTML = `
+		<p class="msg"></p>
+		<items></items>
+	`;
+	container.querySelector('.msg').textContent = msg;
+	// build current items HTML
+	let prepare = function(dialog, messageContainer) {
+		var itemsContainer = messageContainer.querySelector('items');
+		for (let i = 0; i < nuxsr.mem.s.length; i++) {
+			let s = nuxsr.mem.s[i];
+			let r = nuxsr.mem.r[i];
+			// tpl
+			var item = document.createElement('div');
+			item.innerHTML = `
+				z: <input type="text">
+				do: <input type="text">
+			`;
+			// fill safely
+			var inputs = item.querySelectorAll('input');
+			inputs[0].value = s;
+			inputs[1].value = r;
+			itemsContainer.appendChild(item);
+		}
 	}
-	if (confirm(msg)) {
-		nuxsr.mem.s = structuredClone(memDefault.s);
-		nuxsr.mem.r = structuredClone(memDefault.r);
-		nuxsr.mem._saveSr(null); // reset
-	}
+	// confirm(msg)
+	let html = container.innerHTML;
+	nuxsr.confirmHtml(html, prepare).then(confirmed => {
+		if (confirmed) {
+			nuxsr.mem.s = structuredClone(memDefault.s);
+			nuxsr.mem.r = structuredClone(memDefault.r);
+			nuxsr.mem._saveSr(null); // reset
+			// also clear quickcache
+			nuxsr.s.value = '';
+			nuxsr.r.value = '';
+			nuxsr.saveInputs();
+		}
+	});
 }
 nuxsr.mem._saveKey = 'userjs--nuxsr--mem'
 /** Save M+/- (is effectively async). */
@@ -681,10 +713,53 @@ nuxsr.mass_rep = function (obj)
 //
 // Messages
 //
+/**
+ * Shows a simple search message in a box.
+ * @param {String} str Message text (no HTML).
+ */
 nuxsr.msg = function(str) {
 	var el = nuxsr.messages;
 	el.style.display = 'block';
 	el.value = str + '\n' + el.value;
+}
+/**
+ * Shows a custom HTML confirm dialog.
+ * @param {string} message HTML message.
+ * @param {Function?} prepare Extra preparations of the dialog:
+ * 		prepare(dialog, messageContainer);
+ * @returns {Promise<boolean>}
+ */
+nuxsr.confirmHtml = function(message, prepare) {
+	return new Promise(resolve => {
+		// Create dialog
+		let dialog = document.createElement("dialog");
+		dialog.className = 'nuxsr-confirm'
+		dialog.innerHTML = `
+			<form method="dialog">
+				<div class="nuxsr-message">${message}</div>
+				<div class="btns">
+					<button class="ok" value="ok" autofocus>OK</button>
+					<button class="cancel" value="cancel">Anuluj</button>
+				</div>
+			</form>
+		`;
+
+		// extra preps
+		if (typeof prepare === 'function') {
+			let messageContainer = dialog.querySelector('.nuxsr-message');
+			prepare(dialog, messageContainer);
+		}
+
+		// Handle close event
+		dialog.addEventListener("close", () => {
+			resolve(dialog.returnValue === "ok");
+			dialog.remove();
+		});
+
+		// Attach and show
+		document.body.appendChild(dialog);
+		dialog.showModal();
+	});
 }
 
 /* =====================================================
@@ -762,8 +837,10 @@ nuxsr.init = function() {
 
 	// usage: mw.hook('userjs.SearchBox.init').add(function (sr) {});
 	mw.hook('userjs.SearchBox.init').fire(this); // designed for users to customize memory and such
-	// after users had the chance to add to memory
-	nuxsr.mem.init();
+
+	// here might be not enough time for user scripts to load
+	// // after users had the chance to add to memory
+	// nuxsr.mem.init();
 }
 
 /* =====================================================

@@ -28,3 +28,30 @@
 {
 	font-size:90%;
 }
+
+/*
+	HTML confirm dialog.
+*/
+.nuxsr-confirm {
+	border-radius: .5em;
+	border: 1px solid darkgray;
+	padding: 1em;
+	min-width: 15em;
+}
+.nuxsr-confirm .btns {
+	text-align:right;
+	margin-top:1em;
+}
+.btns button {
+	border-radius: 4px;
+	border: 1px outset gray;
+	padding: 5px 15px;
+}
+.nuxsr-confirm .ok {
+	background: #36c;
+	color: #fff;
+}
+.nuxsr-confirm .ok:hover {
+	background: #00a;
+	color: #fff;
+}

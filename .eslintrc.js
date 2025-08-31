@@ -6,10 +6,8 @@ module.exports = {
 	},
 	"extends": "eslint:recommended",
 	"parserOptions": {
-		// Gadgets: ES5
-		"ecmaVersion": 5
-		// User scripts: ES6+
-		//"ecmaVersion": 6
+		// User scripts/Gadgets: ES6+
+		"ecmaVersion": 6
 	},
 	"rules": {
 		"no-prototype-builtins": "off",
@@ -18,14 +16,16 @@ module.exports = {
 		//"array-element-newline": ["error", { "multiline": true }]
 		"array-element-newline": ["error", "consistent"]
 	},
-	"overrides": [{
-		"files": ["**/*.mjs"],
-		"env": {
-			"node": true,
-		},
-		"parserOptions": {
-			"ecmaVersion": 11,
-			"sourceType": "module"
-		},
-	}],
+	"overrides": [
+		{
+			"files": ["**/*.mjs"],
+			"env": {
+				"node": true,
+			},
+			"parserOptions": {
+				"ecmaVersion": 11,
+				"sourceType": "module"
+			},
+		}
+	],
 };
