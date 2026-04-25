@@ -350,27 +350,32 @@ nuxsr.replaceAll = function ()
    ===================================================== */
 nuxsr.toggleCase = function ()
 {
-	var selBB = sel_t.getSelBound(nuxsr.t);
-	if (selBB.end>selBB.start)
-	{
-		var str = sel_t.getSelStr(nuxsr.t);
-		if (str==str.toUpperCase())
-		{
-			str = str.toLowerCase();
-		}
-		else if (str==str.toLowerCase() && selBB.end-selBB.start>1)
-		{
-			str = str.substring(0,1).toUpperCase()+str.substring(1).toLowerCase();
-		}
-		else
-		{
-			str = str.toUpperCase();
-		}
+	let $textbox = $(nuxsr.t);
+	let str = $textbox.textSelection('getSelection');
 
-		// set selection with new value
-		sel_t.setSelStr(nuxsr.t, str, false);
+	if (str.length) {
+		str = nuxsr._toggleStringCase(str);
+		let [start, end] = $textbox.textSelection('getCaretPosition', {startAndEnd: 1}); // save
+		$textbox.textSelection('replaceSelection', str);
+		$textbox.textSelection('setSelection', {start, end}); // restore
 	}
-	nuxsr.sync();
+
+	// nuxsr.sync();
+};
+nuxsr._toggleStringCase = function (str) {
+	if (str==str.toUpperCase())
+	{
+		str = str.toLowerCase();
+	}
+	else if (str==str.toLowerCase() && str.length>1)
+	{
+		str = str.substring(0,1).toUpperCase()+str.substring(1).toLowerCase();
+	}
+	else
+	{
+		str = str.toUpperCase();
+	}
+	return str;
 };
 
 /* =====================================================
@@ -845,6 +850,7 @@ nuxsr.addButtons = function(toolbarGadget) {
 }
 
 nuxsr.inEditBox = () => document.activeElement && document.activeElement.id === 'wpTextbox1';
+nuxsr.inCodeMirror = () => (nuxsr.cmView && nuxsr.cmView.hasFocus);
 
 /**
  * Auto-toggle syntax.
@@ -968,7 +974,7 @@ nuxsr.addKeyBindings = function() {
 	if (this.extraOptions.caseShortcutAdd) {
 		$(document).on('keydown.nuxsrCaseShortcut',  (e) => {
 			if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'u'
-				&& nuxsr.inEditBox()
+				&& (nuxsr.inEditBox() || nuxsr.inCodeMirror())
 			) {
 				e.preventDefault();
 				this.toggleCase();
@@ -976,6 +982,12 @@ nuxsr.addKeyBindings = function() {
 		});
 	}
 }
+
+/** CodeMirror EditorView. */
+nuxsr.cmView = false;
+mw.hook('ext.CodeMirror.ready').add((cm) => {
+	nuxsr.cmView = cm.view;
+});
 
 nuxsr.init = function() {
 	var me = this;
