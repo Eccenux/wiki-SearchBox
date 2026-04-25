@@ -1,5 +1,5 @@
-let version = '3.2.0';
-let info = `search icon, shortcut`;
+let version = '3.3.0';
+let info = `toggle syntax and cleanup`;
 export {
 	version,
 	info,

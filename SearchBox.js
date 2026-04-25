@@ -104,11 +104,11 @@ nuxsr.boxHtml = function() {
 //
 /** @type {Element} A textarea to search in (probably wpTextbox1). */
 nuxsr.t = null;
-/** @type {Element} Gadget's main form (document.nuxsr_form). */
+/** @type {Element} Gadget's main form (nuxsr_form). */
 nuxsr.form = null;
-/** @type {Element} document.nuxsr_form.nuxsr.search */
+/** @type {Element} nuxsr_form.nuxsr.search */
 nuxsr.s = null;
-/** @type {Element} document.nuxsr_form.nuxsr.replace */
+/** @type {Element} nuxsr_form.nuxsr.replace */
 nuxsr.r = null;
 /** @type {Element} The form container. */
 nuxsr.srbox = null;
@@ -385,16 +385,18 @@ nuxsr.sync = function ()
 /* =====================================================
 	Box show/hide
    ===================================================== */
-nuxsr.showHide = function() {
+nuxsr.formShown = false;
 
+nuxsr.createMainForm = function() {
 	var create = false;	// first time?
 	if ( !this.form ) {
 		create = true;
 		//
 		// inserting search box
-		var srbox = document.createElement( 'div' );
+		let srbox = document.createElement('div');
 		srbox.innerHTML = nuxsr.boxHtml();
-		srbox.firstChild.style.display = 'none';
+		let form = srbox.querySelector('form');
+		form.style.display = 'none';
 
 		var topEditor = document.querySelector('.wikiEditor-ui-top');
 		if (topEditor instanceof Element) {
@@ -403,9 +405,9 @@ nuxsr.showHide = function() {
 			jQuery(this.t).before(srbox);
 		}
 		this.srbox = srbox;
-		this.form = document.nuxsr_form;
-		this.s = document.nuxsr_form.nuxsr_search;
-		this.r = document.nuxsr_form.nuxsr_replace;
+		this.form = form;
+		this.s = form.nuxsr_search;
+		this.r = form.nuxsr_replace;
 
 		// init data (re)store
 		nuxsr.restoreInputs();
@@ -413,7 +415,9 @@ nuxsr.showHide = function() {
 			nuxsr.saveInputs();
 		});
 	}
-
+	return create;
+}
+nuxsr.createMessagesBox = function() {
 	//
 	// inserting message box
 	if ( !this.messages ) {
@@ -430,6 +434,13 @@ nuxsr.showHide = function() {
 		nuxsr.messages = el;
 		jQuery('.wikiEditor-ui').after(nuxsr.messages);
 	}
+}
+
+nuxsr.showHide = function() {
+	// create main form when needed
+	let create = nuxsr.createMainForm();
+	// create message box when needed
+	nuxsr.createMessagesBox();
 
 	// setup show/hide and fix access key
 	var hidding = false;
@@ -438,12 +449,14 @@ nuxsr.showHide = function() {
 			nuxsr.messages.style.display = 'block';
 		}
 		nuxsr.form.style.display = 'block';
+		nuxsr.formShown = true;
 		nuxsr.s.focus();
 
 	} else {
 		hidding = true;
 		nuxsr.messages.style.display = 'none';
 		nuxsr.form.style.display = 'none';
+		nuxsr.formShown = false;
 	}
 
 	// usage: mw.hook('userjs.SearchBox.showHide').add(function (sr, hidding) {});
@@ -833,16 +846,118 @@ nuxsr.addButtons = function(toolbarGadget) {
 
 nuxsr.inEditBox = () => document.activeElement && document.activeElement.id === 'wpTextbox1';
 
+/**
+ * Auto-toggle syntax.
+ */
+class NuxsrSyntaxHighlighter {
+	constructor() {
+	}
+	init() {
+		this._sToggle = document.querySelector('#mw-editbutton-codemirror [aria-pressed]');
+		this._sWasEnabled = this.isEnabled();
+		// console.debug('[nuxsr]', {syntaxToggle:this._sToggle, syntaxWasEnabled:this._sWasEnabled});
+	}
+	wasEnabled() {
+		if (this._sWasEnabled === undefined) {
+			console.warn('[nuxsr]', 'NSH state was not initialized', {syntaxToggle:this._sToggle, syntaxWasEnabled:this._sWasEnabled});
+			this.init();
+		}
+		if (this._sWasEnabled === undefined) {
+			console.error('[nuxsr]', 'NSH state still not initialized', {syntaxToggle:this._sToggle, syntaxWasEnabled:this._sWasEnabled});
+		}
+		return this._sWasEnabled;
+	}
+	isEnabled() {
+		if (this._sToggle) {
+			return this._sToggle.getAttribute('aria-pressed') == 'true';
+		}
+		return undefined;
+	}
+	toggle() {
+		this._sToggle.click();
+	}
+	disable() {
+		// console.debug('[nuxsr]', 'disable', {syntaxToggle:this._sToggle, syntaxWasEnabled:this._sWasEnabled});
+		if (this.isEnabled()) {
+			this._sToggle.click();
+		}
+	}
+	enable() {
+		// console.debug('[nuxsr]', 'enable', {syntaxToggle:this._sToggle, syntaxWasEnabled:this._sWasEnabled});
+		if (!this.isEnabled()) {
+			this._sToggle.click();
+		}
+	}
+}
+
+/**
+ * Simple throttle (dławienie wywołań).
+ * 
+ * @example Usage:
+ * <pre>
+ * const dusi = new NuxsrDusiciel(100);
+ * if (dusi.canRun()) { ... }
+ * </pre>
+ */
+class NuxsrDusiciel {
+	/**
+	 * @param {number} delayMs - minimum choke delay (ms).
+	 */
+	constructor(delayMs) {
+		/** @type {number} */
+		this.delayMs = delayMs || 100;
+
+		/** @type {number} */
+		this.lastRun = 0;
+	}
+
+	/**
+	 * Check if the action can run now.
+	 * Resets throttle when action can be run (assumes the action will be executed after check).
+	 * @returns {boolean}
+	 */
+	canRun() {
+		const now = Date.now();
+
+		if (now - this.lastRun < this.delayMs) {
+			return false;
+		}
+
+		this.lastRun = now;
+		return true;
+	}
+}
+
 /** Keybinding (global). */
 nuxsr.addKeyBindings = function() {
+	// auto-toggle syntax – gather data
+	let syntax = new NuxsrSyntaxHighlighter();
+	$(()=>{
+		syntax.init();
+	});
+
 	// Search switch
 	$(document).off('keydown.nuxsrSearchShortcut');
 	if (this.extraOptions.searchShortcutAdd) {
+		const dusi = new NuxsrDusiciel(100);
 		$(document).on('keydown.nuxsrSearchShortcut', (e) => {
 			if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'f'
 				&& (this.extraOptions.searchShortcutGlobal || nuxsr.inEditBox())
 			) {
+				if (!dusi.canRun()) {
+					return;
+				}
 				e.preventDefault();
+
+				if (!this.formShown) { // will be shown
+					syntax.init();
+					syntax.disable();
+				} else {
+					if (syntax.wasEnabled()) {
+						syntax.enable();
+					}
+				}
+
 				this.showHide();
 			}
 		});
@@ -852,12 +967,10 @@ nuxsr.addKeyBindings = function() {
 	$(document).off('keydown.nuxsrCaseShortcut');
 	if (this.extraOptions.caseShortcutAdd) {
 		$(document).on('keydown.nuxsrCaseShortcut',  (e) => {
-			console.debug('document.activeElement:', document.activeElement);
 			if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'u'
 				&& nuxsr.inEditBox()
 			) {
 				e.preventDefault();
-
 				this.toggleCase();
 			}
 		});
