@@ -2,6 +2,9 @@
 	"search.exclude": {
 		"package-lock.json": true,
 	},
+	"workbench.editorAssociations": {
+		"*.svg": "default"
+	},
     "editor.detectIndentation": false,
     "editor.useTabStops": true,
     "editor.insertSpaces": false,

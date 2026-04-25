@@ -18,17 +18,16 @@
 */
 /* eslint-disable array-bracket-newline */
 /* eslint-disable no-useless-escape */
-/* global Promise */
-/* global mw, jQuery */
+/* global jQuery */
 /* global sel_t, toolbarGadget */
 
 /* Translatable strings */
 mw.messages.set({
 	'nuxsr-occurences-replaced': 'Zmieniono $1 wystąpień [$2] na [$3].',
 	'nuxsr-search-from-the-beginning': 'Wyszukiwanie od początku',
-	'nuxsr-search-title': 'Wyszukiwanie i zamiana (wer. $1)',
+	'nuxsr-search-title': 'Wyszukiwanie i zamiana (wer. $1); skrót: CTRL+SHIFT+F',
 	'nuxsr-search-alt': 'Szuk.',
-	'nuxsr-case-title': 'Zmiana wielkości liter',
+	'nuxsr-case-title': 'Zmiana wielkości liter; skrót: CTRL+SHIFT+U',
 	'nuxsr-case-alt': 'Wlk. lit.',
 	'nuxsr-mem-clear-message': 'Masz $1 wyszukiwania w pamięci. Potwierdź czy chcesz je skasować i wgrać $2 domyślne.',
 	'nuxsr-mem-clear-deleted-data': 'Skasowano wyszukiwania z pamięci.',
@@ -44,6 +43,16 @@ function Nuxsr() {
 }
 var nuxsr = new Nuxsr();
 window.nuxsr = nuxsr;
+
+// override this in:
+// mw.hook('userjs.SearchBox.init').add(function (sr) { ... });
+nuxsr.extraOptions = {
+	// if true then shortcuts will be added
+	searchShortcutAdd: true,
+	caseShortcutAdd: true,
+	// if false then CTRL+SHIFT+F will only work in the 
+	searchShortcutGlobal: true,
+};
 
 
 /**
@@ -429,14 +438,12 @@ nuxsr.showHide = function() {
 			nuxsr.messages.style.display = 'block';
 		}
 		nuxsr.form.style.display = 'block';
-		nuxsr.searchButton.accessKey = "none";
 		nuxsr.s.focus();
 
 	} else {
 		hidding = true;
 		nuxsr.messages.style.display = 'none';
 		nuxsr.form.style.display = 'none';
-		nuxsr.searchButton.accessKey = "F";
 	}
 
 	// usage: mw.hook('userjs.SearchBox.showHide').add(function (sr, hidding) {});
@@ -788,13 +795,12 @@ nuxsr.addButtons = function(toolbarGadget) {
 			alt: mw.msg('nuxsr-search-alt'),
 			id: 'srSearchIcon',
 			oldIcon: 'https://upload.wikimedia.org/wikipedia/commons/1/12/Button_find.png',
-			newIcon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/Crystal_Clear_action_viewmag.png/21px-Crystal_Clear_action_viewmag.png',
+			newIcon: 'https://upload.wikimedia.org/wikipedia/commons/c/c1/SearchBox_icon_for_editor.svg',
 			onclick: function() {
 				me.showHide();
 			},
-			oncreate: function(button) {
+			oncreate: function (button) {
 				me.searchButton = button;
-				me.searchButton.accessKey = "F";
 			},
 		} );
 		toolbarGadget.addButton( {
@@ -802,7 +808,7 @@ nuxsr.addButtons = function(toolbarGadget) {
 			alt: mw.msg('nuxsr-case-alt'),
 			id: 'srCaseIcon',
 			oldIcon: 'https://upload.wikimedia.org/wikipedia/commons/1/12/Button_case.png',
-			newIcon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Wynn.svg/23px-Wynn.svg.png',
+			newIcon: 'https://upload.wikimedia.org/wikipedia/commons/d/de/Wynn.svg',
 			onclick: function() {
 				me.toggleCase();
 			},
@@ -824,6 +830,40 @@ nuxsr.addButtons = function(toolbarGadget) {
 		});
 	}
 }
+
+nuxsr.inEditBox = () => document.activeElement && document.activeElement.id === 'wpTextbox1';
+
+/** Keybinding (global). */
+nuxsr.addKeyBindings = function() {
+	// Search switch
+	$(document).off('keydown.nuxsrSearchShortcut');
+	if (this.extraOptions.searchShortcutAdd) {
+		$(document).on('keydown.nuxsrSearchShortcut', (e) => {
+			if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'f'
+				&& (this.extraOptions.searchShortcutGlobal || nuxsr.inEditBox())
+			) {
+				e.preventDefault();
+				this.showHide();
+			}
+		});
+	}
+
+	// Case switch
+	$(document).off('keydown.nuxsrCaseShortcut');
+	if (this.extraOptions.caseShortcutAdd) {
+		$(document).on('keydown.nuxsrCaseShortcut',  (e) => {
+			console.debug('document.activeElement:', document.activeElement);
+			if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'u'
+				&& nuxsr.inEditBox()
+			) {
+				e.preventDefault();
+
+				this.toggleCase();
+			}
+		});
+	}
+}
+
 nuxsr.init = function() {
 	var me = this;
 
@@ -845,10 +885,15 @@ nuxsr.init = function() {
 		if (typeof document.editform !== 'undefined') {
 			me.t = document.editform.wpTextbox1;
 		}
+		// re-run to make sure users are able to change `extraOptions`
+		me.addKeyBindings();
 	} );
 
 	// usage: mw.hook('userjs.SearchBox.init').add(function (sr) {});
 	mw.hook('userjs.SearchBox.init').fire(this); // designed for users to customize memory and such
+
+	// global key bindings
+	this.addKeyBindings();
 
 	// here might be not enough time for user scripts to load
 	// // after users had the chance to add to memory

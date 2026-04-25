@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="22" height="22" viewBox="0 0 5.82 5.82">
+  <defs>
+    <radialGradient xlink:href="#a" id="b" cx="1.66" cy="1.19" r="1.61" fx="1.66" fy="1.19" gradientTransform="translate(-.14 -.13)" gradientUnits="userSpaceOnUse"/>
+    <linearGradient id="a">
+      <stop offset="0" style="stop-color:#fff;stop-opacity:1"/>
+      <stop offset="1" style="stop-color:#fff;stop-opacity:.10194175"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(.43 .43)">
+    <circle cx="1.55" cy="1.55" r="1.71" style="mix-blend-mode:normal;fill:url(#b);stroke:#000;stroke-width:.132292;stroke-linecap:square;stroke-miterlimit:1;stroke-dasharray:none;stroke-opacity:1;paint-order:markers stroke fill"/>
+    <circle cx="1.55" cy="1.55" r="1.75" style="mix-blend-mode:normal;fill:none;stroke:#000;stroke-width:.137358;stroke-linecap:square;stroke-miterlimit:1;stroke-dasharray:none;stroke-opacity:1;paint-order:markers stroke fill"/>
+  </g>
+  <path d="M2.36 2.49 4.2 4.33" style="fill:none;stroke:#000;stroke-width:.264583;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:1;stroke-dasharray:none;stroke-opacity:1;paint-order:normal" transform="translate(1.23 1.12)scale(.856)"/>
+  <path d="M2.89 2.6a.4.4 0 0 0-.38.23.4.4 0 0 0 .09.44l1.52 1.54c.15.14.41.14.55 0a.4.4 0 0 0 .01-.56L3.15 2.71a.4.4 0 0 0-.26-.1" style="color:#000;fill:#000;stroke-linecap:round;stroke-miterlimit:1;-inkscape-stroke:none" transform="translate(1.4 1.27)scale(.856)"/>
+</svg>
